@@ -1,0 +1,31 @@
+---
+import "../styles/global.css";
+---
+<script>
+  // Check if we have a token in localStorage
+  async function checkAuth() {
+    try {
+      const { api } = await import('../lib/api');
+      try {
+        // Call the /me API to verify the token and get user info
+        const response = await api.get("/me");
+        const userData = response.data;
+        // Redirect to dashboard
+        if (userData.id) {
+          window.location.href = '/dashboard';
+        } else {
+          window.location.href = '/login';
+        }
+      } catch (e) {
+        console.error('Failed to verify token:', e);
+        window.location.href = '/login';
+      }
+    } catch (e) {
+      console.error('Auth check failed:', e);
+      window.location.href = '/login';
+    }
+  }
+  checkAuth()
+</script>
+
+<main class="p-8 text-center">Redirecting…</main>

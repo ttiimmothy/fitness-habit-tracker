@@ -1,0 +1,20 @@
+# Node
+node_modules/
+.pnpm-store/
+dist/
+.astro/
+
+# Python
+__pycache__/
+.venv/
+.pytest_cache/
+.coverage
+
+# Env
+*.env
+backend/.env
+client/.env
+
+# OS
+.DS_Store
+**/instructions/*

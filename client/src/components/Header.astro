@@ -1,0 +1,18 @@
+---
+import {DarkModeToggle} from "../islands/react/DarkModeToggle";
+---
+
+<header class="sticky top-0 z-10 backdrop-blur bg-zinc-200 dark:bg-neutral-900 border-b border-gray-100 dark:border-gray-900 text-zinc-900 dark:text-zinc-200">
+  <div class="max-w-5xl mx-auto p-3 flex items-center justify-between">
+    <a href="/dashboard" class="font-semibold">Fitness & Habit Tracker</a>
+    
+    <div class="flex items-center gap-5">
+      <a class="text-sm opacity-60 hover:opacity-100" href="/dashboard">Dashboard</a>
+      <a class="text-sm opacity-60 hover:opacity-100" href="/leaderboard">Leaderboard</a>
+      <a class="text-sm opacity-60 hover:opacity-100" href="/user">Profile</a>
+      <!-- client:load can help the server side and client side checking the same be correct -->
+      <DarkModeToggle client:load />
+
+    </div>
+  </div>
+</header>

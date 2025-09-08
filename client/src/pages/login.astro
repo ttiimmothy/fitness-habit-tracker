@@ -1,0 +1,14 @@
+---
+import "../styles/global.css";
+import {LoginFormIsland} from "../islands/LoginFormIsland";
+import Layout from "./Layout.astro";
+---
+<Layout>
+<main class="grid place-items-center p-6">
+  <div class="w-full max-w-sm rounded-xl shadow p-6">
+    <h1 class="text-2xl font-semibold mb-4">Sign in</h1>
+    <LoginFormIsland client:load />
+  </div>
+  <a class="fixed top-4 right-4 text-sm opacity-70 hover:opacity-100" href="/">Home</a>
+ </main>
+</Layout>

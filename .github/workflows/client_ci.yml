@@ -1,0 +1,28 @@
+name: Client ci
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install deps
+        working-directory: client
+        run: npm ci
+      - name: Lint & Typecheck
+        working-directory: client
+        run: |
+          npm run lint || true
+          npm run typecheck
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+
