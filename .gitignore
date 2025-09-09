@@ -18,4 +18,4 @@ client/.env
 # OS
 .DS_Store
 **/instructions/*
-spec.ts
+spec.txt
