@@ -19,3 +19,9 @@ class TokenResponse(BaseModel):
 class ChangePasswordRequest(BaseModel):
   currentPassword: str
   newPassword: str
+  
+  
+class RegisterRequest(BaseModel):
+  name: str
+  email: EmailStr
+  password: str

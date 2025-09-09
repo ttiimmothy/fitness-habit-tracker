@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { useAuthStore, type User } from '../store/auth';
+import { useAuthStore, type User } from '../store/authStore';
 
 // Types
 interface LoginCredentials {
@@ -72,7 +72,7 @@ export function useUser() {
   return useQuery({
     queryKey: authKeys.user(),
     queryFn: async (): Promise<User> => {
-      const response = await api.get('/me');
+      const response = await api('/auth/me');
       return response.data;
     },
     // enabled: !!token,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuthStore } from '../../store/auth';
+import { useAuthStore } from '../../store/authStore';
 import { useLogout } from '../../hooks/useAuth';
 import PasswordUpdateForm from './PasswordUpdateForm';
 

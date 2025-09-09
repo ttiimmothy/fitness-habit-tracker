@@ -1,106 +1,147 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { CreateHabitFormData } from '../schemas/habitSchemas';
 
-// Types
-export interface Habit {
+export type Habit = {
   id: string;
-  name: string;
+  title: string;
   description?: string;
-  target: number;
-  unit: string;
   frequency: 'daily' | 'weekly' | 'monthly';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateHabitData {
-  name: string;
-  description?: string;
   target: number;
-  unit: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-}
-
-export interface UpdateHabitData extends Partial<CreateHabitData> {
-  id: string;
-}
-
-// Query keys
-export const habitKeys = {
-  all: ['habits'] as const,
-  lists: () => [...habitKeys.all, 'list'] as const,
-  list: (filters: string) => [...habitKeys.lists(), { filters }] as const,
-  details: () => [...habitKeys.all, 'detail'] as const,
-  detail: (id: string) => [...habitKeys.details(), id] as const,
+  category: string;
+  color?: string;
+  created_at: string;
+  updated_at: string;
 };
 
-// Custom hooks
-export function useHabits() {
+export type HabitDailyProgress = {
+  date: string;
+  completed: boolean;
+  target: number;
+  actual: number;
+};
+
+// Fetch all habits
+export const useHabits = () => {
   return useQuery({
-    queryKey: habitKeys.lists(),
+    queryKey: ['habits'],
     queryFn: async (): Promise<Habit[]> => {
-      const response = await api.get('/habits');
+      const response = await api('/habits');
       return response.data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
   });
-}
+};
 
-export function useHabit(id: string) {
+// Fetch single habit
+export const useHabit = (id: string) => {
   return useQuery({
-    queryKey: habitKeys.detail(id),
+    queryKey: ['habits', id],
     queryFn: async (): Promise<Habit> => {
-      const response = await api.get(`/habits/${id}`);
+      const response = await api(`/habits/${id}`);
       return response.data;
     },
     enabled: !!id,
   });
-}
+};
 
-export function useCreateHabit() {
+// Create new habit
+export const useCreateHabit = () => {
   const queryClient = useQueryClient();
-
+  
   return useMutation({
-    mutationFn: async (data: CreateHabitData): Promise<Habit> => {
+    mutationFn: async (data: CreateHabitFormData): Promise<Habit> => {
       const response = await api.post('/habits', data);
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate and refetch habits list
-      queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
+      // Invalidate and refetch habits
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
     },
   });
-}
+};
 
-export function useUpdateHabit() {
+// Update habit
+export const useUpdateHabit = () => {
   const queryClient = useQueryClient();
-
+  
   return useMutation({
-    mutationFn: async ({ id, ...data }: UpdateHabitData): Promise<Habit> => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateHabitFormData> }): Promise<Habit> => {
       const response = await api.put(`/habits/${id}`, data);
       return response.data;
     },
-    onSuccess: (updatedHabit) => {
-      // Update the specific habit in cache
-      queryClient.setQueryData(habitKeys.detail(updatedHabit.id), updatedHabit);
-      // Invalidate the habits list
-      queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
+    onSuccess: (_, { id }) => {
+      // Invalidate and refetch habits
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habits', id] });
     },
   });
-}
+};
 
-export function useDeleteHabit() {
+// Delete habit
+export const useDeleteHabit = () => {
   const queryClient = useQueryClient();
-
+  
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       await api.delete(`/habits/${id}`);
     },
-    onSuccess: (_, deletedId) => {
-      // Remove the habit from cache
-      queryClient.removeQueries({ queryKey: habitKeys.detail(deletedId) });
-      // Invalidate the habits list
-      queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
+    onSuccess: () => {
+      // Invalidate and refetch habits
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
     },
   });
-}
+};
+
+// Fetch daily progress for a specific habit
+export const useHabitDailyProgress = (habitId: string, days: number = 7) => {
+  return useQuery({
+    queryKey: ['habits', habitId, 'daily-progress', days],
+    queryFn: async (): Promise<HabitDailyProgress[]> => {
+      const response = await api(`/habits/${habitId}/daily-progress?days=${days}`);
+      return response.data;
+    },
+    enabled: !!habitId,
+  });
+};
+
+// Fetch daily progress for multiple habits
+export const useMultipleHabitsDailyProgress = (habitIds: string[], days: number = 7) => {
+  return useQuery({
+    queryKey: ['habits', 'multiple-daily-progress', habitIds, days],
+    queryFn: async (): Promise<Record<string, HabitDailyProgress[]>> => {
+      const promises = habitIds.map(habitId => 
+        api.get(`/habits/${habitId}/daily-progress?days=${days}`)
+          .then(response => ({ habitId, data: response.data }))
+      );
+      
+      const results = await Promise.all(promises);
+      const dataMap: Record<string, HabitDailyProgress[]> = {};
+      
+      results.forEach(({ habitId, data }) => {
+        dataMap[habitId] = data;
+      });
+      
+      return dataMap;
+    },
+    enabled: habitIds.length > 0,
+  });
+};
+
+// Log habit completion
+export const useLogHabit = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      await api.post(`/habits/${id}/log`, {});
+    },
+    onSuccess: (_, id) => {
+      // Invalidate habits and related queries
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habits', id] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['habits', id, 'daily-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['habits', 'multiple-daily-progress'] });
+    },
+  });
+};

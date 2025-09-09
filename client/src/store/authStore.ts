@@ -6,7 +6,7 @@ export type User = { id: string; email: string; name?: string | null; avatar_url
 
 type AuthState = {
   user: User | null;
-  setAuth: (u: User) => void;
+  setAuth: (u: User|null) => void;
   logout: () => Promise<void>;
 };
 

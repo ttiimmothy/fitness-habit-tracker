@@ -1,16 +1,20 @@
 ---
 import "../../styles/global.css";
-import ProgressChart from "../../islands/react/ProgressChart";
+import IndividualHabitChartIsland from "../../islands/IndividualHabitChartIsland";
+import HabitPageHeader from "../../islands/react/HabitPageHeader";
+import BackButton from "../../islands/react/BackButton";
 import Layout from "../Layout.astro"
+import AuthGuard from "../../islands/react/AuthGuard";
+
 export const prerender = false;
 ---
 <Layout>
-
+  <AuthGuard client:load>
   <main class="max-w-3xl mx-auto p-6 space-y-6">
-    <a class="text-sm opacity-70 hover:opacity-100" href="/dashboard">← Back</a>
-    <h1 class="text-2xl font-semibold">Habit</h1>
-    <ProgressChart client:load />
+    <BackButton href="/dashboard" client:load />
+    <HabitPageHeader client:load />
+    <IndividualHabitChartIsland client:load />
   </main>
-  
+  </AuthGuard>
 </Layout>
 

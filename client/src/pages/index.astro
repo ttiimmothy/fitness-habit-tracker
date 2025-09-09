@@ -1,17 +1,18 @@
 ---
 import "../styles/global.css";
+import IndexRedirect from "../islands/react/IndexRedirect";
 ---
-<script>
-  // Check if we have a token in localStorage
+
+<!-- <script>
   async function checkAuth() {
     try {
       const { api } = await import('../lib/api');
       try {
         // Call the /me API to verify the token and get user info
-        const response = await api.get("/me");
+        const response = await api.get("/auth/me");
         const userData = response.data;
         // Redirect to dashboard
-        if (userData.id) {
+        if (userData.user) {
           window.location.href = '/dashboard';
         } else {
           window.location.href = '/login';
@@ -26,6 +27,7 @@ import "../styles/global.css";
     }
   }
   checkAuth()
-</script>
+</script> -->
 
-<main class="p-8 text-center">Redirecting…</main>
+<IndexRedirect client:load />
+<!-- <main class="p-8 text-center">Redirecting…</main> -->

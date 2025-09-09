@@ -10,6 +10,7 @@ export const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Cookies are automatically included with withCredentials: true
     return config
   },
   (error) => {

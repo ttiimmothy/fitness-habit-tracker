@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies.get_current_user import get_current_user
 from app.db.session import get_db
-from app.models.habit import Habit, Frequency
+from app.models.habit import Habit, Frequency, Category
 from app.models.user import User
 from app.schemas.common import HabitOut, HabitCreate, HabitUpdate
 
@@ -21,6 +21,8 @@ def list_habits(db: Session = Depends(get_db), current_user: User = Depends(get_
     "title": h.title,
     "frequency": h.frequency.value,
     "target": h.target,
+    "category": h.category.value,
+    "description": h.description,
     "created_at": h.created_at,
   }) for h in habits]
 
@@ -31,7 +33,13 @@ def create_habit(payload: HabitCreate, db: Session = Depends(get_db), current_us
     freq = Frequency(payload.frequency)
   except ValueError:
     raise HTTPException(status_code=422, detail="Invalid frequency")
-  habit = Habit(user_id=current_user.id, title=payload.title, frequency=freq, target=payload.target)
+
+  try:
+    category = Category(payload.category)
+  except ValueError:
+    raise HTTPException(status_code=422, detail="Invalid category")
+
+  habit = Habit(user_id=current_user.id, title=payload.title, frequency=freq, target=payload.target, category=category, description=payload.description)
   db.add(habit)
   db.commit()
   db.refresh(habit)
@@ -41,6 +49,8 @@ def create_habit(payload: HabitCreate, db: Session = Depends(get_db), current_us
     "title": habit.title,
     "frequency": habit.frequency.value,
     "target": habit.target,
+    "category": habit.category.value,
+    "description": habit.description,
     "created_at": habit.created_at,
   })
 
@@ -56,13 +66,16 @@ def get_habit(habit_id: str, db: Session = Depends(get_db), current_user: User =
     "title": habit.title,
     "frequency": habit.frequency.value,
     "target": habit.target,
+    "category": habit.category.value,
+    "description": habit.description,
     "created_at": habit.created_at,
   })
 
 
 @router.put("/{habit_id}", response_model=HabitOut)
 def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit = db.query(Habit).filter(Habit.id == uuid.UUID(habit_id), Habit.user_id == current_user.id).first()
+  habit = db.query(Habit).filter(Habit.id == uuid.UUID(
+      habit_id), Habit.user_id == current_user.id).first()
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")
   if payload.title is not None:
@@ -74,6 +87,11 @@ def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_
       raise HTTPException(status_code=422, detail="Invalid frequency")
   if payload.target is not None:
     habit.target = payload.target
+  if payload.category is not None:
+    try:
+      habit.category = Category(payload.category)
+    except ValueError:
+      raise HTTPException(status_code=422, detail="Invalid category")
   db.commit()
   db.refresh(habit)
   return HabitOut(**{
@@ -82,6 +100,8 @@ def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_
     "title": habit.title,
     "frequency": habit.frequency.value,
     "target": habit.target,
+    "category": habit.category.value,
+    "description": habit.description,
     "created_at": habit.created_at,
   })
 

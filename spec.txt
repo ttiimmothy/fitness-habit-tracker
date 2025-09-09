@@ -1,0 +1,355 @@
+# Fitness & Habit Tracker — Monorepo Spec (FastAPI backend)
+
+> **Name**: `fitness_habit_tracker`
+> **Client**: Astro + TS + Tailwind + React islands  
+> **Backend**: FastAPI + SQLAlchemy + Alembic + JWT  
+> **Auth**: Email/password (JWT) + Google OAuth (stub, can be enabled later)  
+> **Infra**: Docker (dev+prod), docker‑compose (db+backend+client+redis), GitHub Actions CI  
+> **Licensing**: Apache‑2.0
+
+---
+
+## 0) Repository Layout
+```
+fitness_habit_tracker/
+├─ client/                         # Astro app (static build, React islands)
+├─ backend/                        # FastAPI app (ASGI)
+├─ .github/workflows/
+│  ├─ client-ci.yml
+│  └─ backend-ci.yml
+├─ docker-compose.yml              # dev stack: postgres + redis + backend + client
+├─ LICENSE                         # Apache-2.0
+├─ README.md
+└─ .gitignore
+```
+
+---
+
+## 1) Client (Astro)
+**Goals**
+- Astro @latest + TypeScript + Tailwind
+- React islands (via `@astrojs/react`) for interactive bits and charts (Recharts)
+- Client-side fetch to backend with `Authorization: Bearer <token>`
+- Zustand store for `{token, user}` (persist to `localStorage`)
+- View Transitions enabled; dark mode toggle; islands error boundary
+
+**Packages**
+- runtime: `astro`, `@astrojs/react`, `@astrojs/tailwind`, `react`, `react-dom`, `zustand`, `recharts`, `dayjs`, `zod`
+- tooling: `typescript`, `eslint`, `vitest`, `@testing-library/react`
+
+**Env**
+- `.env.example` → `VITE_API_URL=http://localhost:8000`
+
+**Routing & Pages**
+- `/src/pages/index.astro` → redirect to `/dashboard` if logged-in; else `/login`
+- `/src/pages/login.astro` → React island `LoginForm`
+- `/src/pages/dashboard.astro` → list habits, quick log buttons, streak summary
+- `/src/pages/habit/[id].astro` → detail + `ProgressChart` island
+- `/src/pages/leaderboard.astro` → placeholder
+
+**Key Components**
+- `islands/react/HabitCard.tsx`
+- `islands/react/NewHabitModal.tsx`
+- `islands/react/LogButton.tsx`
+- `islands/react/StreakCounter.tsx`
+- `islands/react/ProgressChart.tsx` (Recharts)
+- `ui/Header.astro`, `ui/Footer.astro`, `ui/Toaster.astro`
+
+**Data & State**
+- `src/lib/api.ts` lightweight fetch wrapper (attaches Bearer token, handles 401 → /login)
+- Zustand store restoration on app init; fetch `/auth/me` if token present
+
+---
+
+## 2) Backend (FastAPI)
+
+### 2.1 Tech Stack
+- **Web**: `fastapi`, `uvicorn[standard]`
+- **DB**: `SQLAlchemy>=2`, `alembic`, `psycopg2-binary`
+- **Auth**: `python-jose[cryptography]` (JWT), `passlib[bcrypt]` (password hashing)
+- **OAuth (stub)**: `Authlib`
+- **Validation/Settings**: `pydantic` v2, `pydantic-settings`
+- **CORS**: `fastapi.middleware.cors`
+- **Rate limiting**: `fastapi-limiter` (requires **Redis**)
+- **Testing**: `pytest`, `httpx`, `pytest-asyncio`, `coverage`
+- **Lint/Format**: `ruff`, `black`
+- **Packaging**: `poetry`
+
+### 2.2 Directory Structure
+```
+backend/
+├─ app/
+│  ├─ main.py                     # FastAPI app, middleware, routers
+│  ├─ wsgi.py                     # `app` export for ASGI servers if needed
+│  ├─ problem_details.py          # RFC7807 helpers & exception handlers
+│  ├─ core/
+│  │  ├─ config.py                # pydantic-settings (env)
+│  │  ├─ security.py              # JWT utils, password hashing
+│  │  └─ rate_limit.py            # fastapi-limiter init (Redis)
+│  ├─ db/
+│  │  ├─ base.py                  # Declarative Base registry
+│  │  └─ session.py               # Engine & SessionLocal factory
+│  ├─ models/                     # SQLAlchemy models
+│  │  ├─ user.py
+│  │  ├─ habit.py
+│  │  ├─ habit_log.py
+│  │  └─ badge.py
+│  ├─ schemas/                    # Pydantic request/response models
+│  │  ├─ auth.py
+│  │  ├─ habit.py
+│  │  ├─ habit_log.py
+│  │  └─ common.py
+│  ├─ services/                   # domain logic
+│  │  ├─ streaks.py
+│  │  ├─ badges.py
+│  │  └─ analytics.py
+│  └─ api/
+│     ├─ deps.py                  # shared deps (db session, auth guard)
+│     └─ routers/
+│        ├─ auth.py               # POST /auth/login, GET /auth/me, Google stubs
+│        ├─ habits.py             # CRUD
+│        ├─ logs.py               # POST /habits/:id/log, GET logs
+│        └─ stats.py              # GET /stats/overview
+├─ alembic/
+│  ├─ versions/                   # migration scripts
+│  └─ env.py                      # Alembic config (SQLA 2.0 style)
+├─ tests/
+│  ├─ api/
+│  ├─ services/
+│  └─ conftest.py
+├─ seed.py                        # demo data seeding
+├─ pyproject.toml                 # poetry + tool configs (ruff/black/pytest)
+├─ requirements.txt               # `poetry export --without-hashes -f requirements.txt -o requirements.txt`
+├─ .env.example                   # envs (see below)
+└─ Makefile
+```
+
+### 2.3 Environment Variables (`backend/.env.example`)
+```
+ENV=dev
+PORT=8000
+DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/fitness
+JWT_SECRET=change-me
+JWT_ALG=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+CLIENT_URL=http://localhost:4321
+REDIS_URL=redis://redis:6379/0
+
+# Google OAuth (scaffold)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
+```
+
+### 2.4 Data Model (SQLAlchemy)
+- **User**: `id UUID pk`, `email UNIQUE`, `password_hash`, `name`, `avatar_url`, `created_at`
+- **Habit**: `id UUID pk`, `user_id FK->User.id`, `title`, `frequency ENUM[daily,weekly]`, `target INT`, `created_at`
+- **HabitLog**: `id UUID pk`, `habit_id FK->Habit.id`, `date DATE`, `created_at`, **UNIQUE** `(habit_id, date)`
+- **Badge**: `id UUID pk`, `user_id FK->User.id`, `code UNIQUE`, `achieved_at`
+
+### 2.5 API Contract (REST)
+**Common**
+- **Auth**: Bearer JWT in `Authorization` header
+- **Errors**: RFC 7807 (`application/problem+json`)
+
+**Auth**
+- `POST /auth/login { email, password } → { accessToken, user }`
+- `GET /auth/me` → `{ user }`
+- `GET /auth/google/login` (stub) → redirect URL  
+- `GET /auth/google/callback` (stub) → exchanges code (disabled by default)
+
+**Habits**
+- `GET /habits` → list
+- `POST /habits { title, frequency, target }` → create
+- `GET /habits/:id` → detail
+- `PUT /habits/:id` → update
+- `DELETE /habits/:id` → delete
+
+**Logs**
+- `POST /habits/:id/log { date? }` → create log (defaults to today)
+- `GET /habits/:id/logs?range=week|month` → paged/ranged logs
+
+**Stats**
+- `GET /stats/overview → { labels: string[], datasets: [{ label, data: number[] }] }`
+
+### 2.6 Validation & Security
+- **Validation**: Pydantic request models for all writes; constrain enums and ranges
+- **Password hashing**: `passlib[bcrypt]`
+- **JWT**: `python-jose` with `HS256`; expiry per `ACCESS_TOKEN_EXPIRE_MINUTES`
+- **CORS**: `allow_credentials=false`; allow only `CLIENT_URL`
+- **Rate limits**: `fastapi-limiter` on `/auth/login` (e.g., `5/minute`) and log endpoints (e.g., `60/hour` per user)
+- **Exception mapping**: unify validation, 401/403/404, 409 (unique), 429, 500 to RFC7807
+
+### 2.7 Services (Domain Logic)
+- `streaks.py`: current & longest streaks; streak reset rules; gap handling
+- `analytics.py`: build `labels` & `datasets` for week/month aggregations
+- `badges.py`: unlock milestones (e.g., 7‑day streak, 30 logs, etc.)
+
+### 2.8 Seeding
+- `make seed` (runs `poetry run python seed.py`) creates:
+  - user: `demo@example.com / Demo123!`
+  - two demo habits with `daily/weekly` targets
+  - example logs spanning last 2–4 weeks
+
+### 2.9 Makefile (Backend)
+```
+run:         uvicorn app.main:app --reload --host 0.0.0.0 --port $${PORT:-8000}
+lint:        ruff check . && black --check .
+fmt:         ruff check --fix . && black .
+test:        pytest -q --cov
+seed:        poetry run python seed.py
+db-upgrade:  alembic upgrade head
+```
+
+### 2.10 Production Entrypoint
+- `gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:$$PORT app.main:app`
+
+---
+
+## 3) Docker (Dev) — `docker-compose.yml`
+**Services**
+- **db**: `postgres:16`
+  - env: `POSTGRES_USER=postgres`, `POSTGRES_PASSWORD=postgres`, `POSTGRES_DB=fitness`
+  - ports: `5432:5432`
+  - volume: `pgdata:/var/lib/postgresql/data`
+  - healthcheck: `pg_isready -U postgres`
+- **redis**: `redis:7-alpine`
+- **backend**
+  - build: `./backend`
+  - command: `poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
+  - env_file: `backend/.env` (or map variables)
+  - volumes: `./backend:/app`
+  - ports: `8000:8000`
+  - depends_on: `db`, `redis`
+  - healthcheck: `curl -fsS http://localhost:8000/health || exit 1`
+- **client**
+  - build: `./client`
+  - command: `pnpm dev --host --port 4321`
+  - env_file: `client/.env`
+  - volumes: `./client:/app`
+  - ports: `4321:4321`
+  - depends_on: `backend`
+
+**Volumes**
+- `pgdata:`
+
+> Dev loop: `docker compose up --build` → open `http://localhost:4321`
+
+---
+
+## 4) Dockerfiles (Prod)
+
+### 4.1 `backend/Dockerfile`
+```
+FROM python:3.11-slim AS base
+ENV POETRY_VERSION=1.8.3 POETRY_VIRTUALENVS_CREATE=false PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
+WORKDIR /app
+COPY pyproject.toml poetry.lock* ./
+RUN poetry install --only main --no-root --no-interaction --no-ansi
+COPY . .
+CMD ["gunicorn","-k","uvicorn.workers.UvicornWorker","-w","2","-b","0.0.0.0:${PORT}","app.main:app"]
+```
+
+### 4.2 `client/Dockerfile`
+```
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json pnpm-lock.yaml* ./
+RUN corepack enable && pnpm i --frozen-lockfile
+COPY . .
+RUN pnpm build
+
+FROM nginx:alpine AS run
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+```
+
+### 4.3 `client/nginx.conf`
+```
+server {
+  listen 80;
+  server_name _;
+  root /usr/share/nginx/html;
+  index index.html;
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+```
+
+---
+
+## 5) GitHub Actions (CI)
+
+### 5.1 `backend-ci.yml`
+- Trigger: PRs & pushes to `main`
+- Matrix: Python 3.11
+- Steps: checkout → setup Python → install Poetry → `poetry install` → `ruff + black --check` → `pytest --cov`
+- Optional: docker build backend image
+
+### 5.2 `client-ci.yml`
+- Trigger: PRs & pushes to `main`
+- Steps: checkout → setup Node LTS → enable Corepack → `pnpm i` → `pnpm lint` → `pnpm typecheck` → `pnpm build`
+- Optional: docker build client image
+
+---
+
+## 6) Testing Strategy
+**Backend**
+- API tests (httpx) for: `/auth/login`, `/auth/me`, `/habits` CRUD, `/habits/:id/log`, `/stats/overview`
+- Service tests for streak calculations & analytics
+- DB tests: unique `(habit_id,date)` constraint, FK behaviors
+
+**Client**
+- Islands: `LoginForm` happy path; `ProgressChart` renders from mock API shape
+
+---
+
+## 7) Error Shape (RFC 7807)
+- Content type: `application/problem+json`
+- Fields: `type`, `title`, `status`, `detail`, `instance`, optional `errors` map
+- Map FastAPI/Starlette exceptions and validation errors to this shape
+
+---
+
+## 8) Security & Ops
+- Tokens stored client-side; **no** cookies; send `Authorization: Bearer`
+- CORS only for `CLIENT_URL`
+- Rate limits: `/auth/login` → `5/min`, logs endpoints → `60/hour` per user (tunable)
+- Gunicorn (UvicornWorker) for prod; readiness `/health`
+
+---
+
+## 9) README Skeleton
+- Overview + architecture (Mermaid)
+- Quickstart (dev): copy envs → `docker compose up` → open client
+- API summary + example `.http` requests
+- Testing commands; formatting/linting
+- Env tables for client & backend
+
+**Mermaid (example)**
+```mermaid
+flowchart LR
+  A[Astro Client] -- HTTP (Bearer) --> B(FastAPI)
+  B -- SQLAlchemy --> C[(Postgres)]
+  B -- Rate Limits --> D[(Redis)]
+  A -- Static Assets --> N[Nginx (prod)]
+```
+
+---
+
+## 10) Non-Goals / Future Work
+- Multi-tenant orgs, subscriptions, and webhooks (out of scope)
+- Background jobs / Celery (consider for reminders)
+- Advanced analytics (export CSV, cohorting)
+- Real‑time updates (SSE/websocket) for streak counters
+
+---
+
+## 11) Acceptance Criteria
+- `docker compose up` starts db+redis+backend+client; health endpoints green
+- Seeded user can log in; dashboard shows seeded habits/logs/stats
+- CI green on both client and backend pipelines
+- API responses validate against schema and emit RFC 7807 errors

@@ -21,6 +21,8 @@ class HabitOut(BaseModel):
   title: str
   frequency: str
   target: int
+  category: str
+  description: str | None
   created_at: datetime
 
 
@@ -28,12 +30,16 @@ class HabitCreate(BaseModel):
   title: str
   frequency: str
   target: int
+  category: str = "other"
+  description: str | None
 
 
 class HabitUpdate(BaseModel):
   title: str | None = None
   frequency: str | None = None
   target: int | None = None
+  category: str | None = None
+  description: str | None = None
 
 
 class HabitLogOut(BaseModel):
@@ -44,4 +50,25 @@ class HabitLogOut(BaseModel):
 
 
 class HabitLogCreate(BaseModel):
-  date: Optional[date] | None = None
+  date: Optional[datetime] | None = None
+
+
+class DailyLogCount(BaseModel):
+  date: date
+  count: int
+
+
+class HabitStats(BaseModel):
+  habit_id: UUIDStr
+  total_logs: int
+  current_streak: int
+  longest_streak: int
+  completion_rate: float  # percentage
+  last_log_date: date | None = None
+
+
+class HabitDailyProgress(BaseModel):
+  date: date
+  completed: bool
+  target: int
+  actual: int

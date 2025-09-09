@@ -1,24 +1,26 @@
 ---
 import "../styles/global.css";
-import HabitCard from "../islands/react/HabitCard";
+import {HabitCardIsland} from "../islands/HabitCardIsland";
 import StreakCounter from "../islands/react/StreakCounter";
-import ProgressChart from "../islands/react/ProgressChart";
+import {ProgressChartIsland} from "../islands/ProgressChartIsland";
 import {DashboardHeader} from "../islands/react/DashboardHeader"
+import AuthGuard from "../islands/react/AuthGuard";
 import Layout from "./Layout.astro";
 ---
 <Layout>
-<main class="max-w-5xl mx-auto p-6 space-y-6">
-  <header>
-    <DashboardHeader client:load/>
-    <h1 class="text-2xl font-semibold">Dashboard</h1>
-  </header>
-  
-  <section class="grid md:grid-cols-2 gap-4">
-    <StreakCounter client:load />
-    <ProgressChart client:load />
-  </section>
-  <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <HabitCard client:load />
-  </section>
-</main>
+<AuthGuard client:load>
+  <main class="max-w-5xl mx-auto p-6 space-y-6">
+    <header>
+      <DashboardHeader client:load/>
+    </header>
+    
+    <section class="grid md:grid-cols-2 gap-4">
+      <StreakCounter client:load />
+      <ProgressChartIsland client:load />
+    </section>
+    <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <HabitCardIsland client:load />
+    </section>
+  </main>
+</AuthGuard>
 </Layout>
