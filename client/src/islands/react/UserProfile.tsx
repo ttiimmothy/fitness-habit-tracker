@@ -53,15 +53,15 @@ export default function UserProfile() {
       onSuccess: () => {
         // The mutation already handles setUser(null) via setAuth(null)
         // Add a small delay to ensure state cleanup completes
-        setTimeout(() => {
+        // setTimeout(() => {
           window.location.href = '/login';
-        }, 100);
+        // }, 100);
       },
       onError: () => {
         // The mutation already handles setUser(null) via setAuth(null)
-        setTimeout(() => {
+        // setTimeout(() => {
           window.location.href = '/login';
-        }, 100);
+        // }, 100);
       },
     });
   };
