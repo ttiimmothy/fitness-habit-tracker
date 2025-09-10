@@ -30,6 +30,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@astrojs/vercel": "^8.2.7",
     "@testing-library/react": "^16.0.1",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
