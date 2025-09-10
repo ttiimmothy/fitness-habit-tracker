@@ -13,6 +13,7 @@ export default function AuthCheck({ children }: AuthCheckProps) {
     const checkAuth = async () => {
       // If we already have user data, we're good
       if (user) {
+        window.location.href = '/';
         return;
       }
 
@@ -21,6 +22,7 @@ export default function AuthCheck({ children }: AuthCheckProps) {
         const response = await api('/auth/me');
         const userData = response.data;
         setAuth(userData.user);
+        window.location.href = '/';
       } catch (error) {
         console.error('Authentication check failed:', error);
         // Redirect to login if authentication fails
