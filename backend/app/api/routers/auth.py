@@ -29,7 +29,9 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
       value=token,
       httponly=True,
       secure=True,  # Use HTTPS in production
-      samesite="lax",
+      
+      # samesite="lax"
+      samesite="none",
       max_age=settings.access_token_expire_minutes * 60  # Same as JWT token expiration
   )
 
@@ -64,7 +66,8 @@ def logout(response: Response):
       key="access_token",
       httponly=True,
       secure=True,
-      samesite="lax"
+      # samesite="lax"
+      samesite="none"
   )
   return {"message": "Successfully logged out"}
 
