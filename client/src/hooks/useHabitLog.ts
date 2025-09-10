@@ -18,10 +18,10 @@ export const useLogHabit = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (id: string): Promise<void> => {
-      await api.post(`/habits/logs/${id}/log`, {});
+    mutationFn: async ({ id, quantity = 1 }: { id: string; quantity?: number }): Promise<void> => {
+      await api.post(`/habits/logs/${id}/log`, { quantity });
     },
-    onSuccess: (_, id) => {
+    onSuccess: (_, { id }) => {
       // Invalidate habits and related queries
       queryClient.invalidateQueries({ queryKey: ['habits'] });
       queryClient.invalidateQueries({ queryKey: ['habits', id] });

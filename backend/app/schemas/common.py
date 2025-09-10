@@ -46,11 +46,13 @@ class HabitLogOut(BaseModel):
   id: UUIDStr
   habit_id: UUIDStr
   date: dt_date
+  quantity: int
   created_at: datetime
 
 
 class HabitLogCreate(BaseModel):
   date: Optional[dt_date] | None = None
+  quantity: int = 1
 
 
 class DailyLogCount(BaseModel):
@@ -78,5 +80,6 @@ class TodayHabitLog(BaseModel):
   frequency: str
   target: int
   logged_today: bool
+  current_progress: int  # How many times logged today
   log_id: UUIDStr | None = None
   log_created_at: datetime | None = None

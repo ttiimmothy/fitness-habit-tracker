@@ -25,7 +25,7 @@ export const useHabitStats = (habitId: string) => {
   return useQuery({
     queryKey: ['habits', habitId, 'stats'],
     queryFn: async (): Promise<HabitStats> => {
-      const response = await api(`/stats/${habitId}/stats/steak`);
+      const response = await api(`/stats/${habitId}/stats/streak`);
       return response.data;
     },
     enabled: !!habitId,
@@ -44,6 +44,29 @@ export const useMultipleHabitsDailyProgress = (habitIds: string[], days: number 
       
       const results = await Promise.all(promises);
       const dataMap: Record<string, HabitDailyProgress[]> = {};
+      
+      results.forEach(({ habitId, data }) => {
+        dataMap[habitId] = data;
+      });
+      
+      return dataMap;
+    },
+    enabled: habitIds.length > 0,
+  });
+};
+
+// Fetch stats for multiple habits
+export const useMultipleHabitsStats = (habitIds: string[]) => {
+  return useQuery({
+    queryKey: ['habits', 'multiple-stats', habitIds],
+    queryFn: async (): Promise<Record<string, HabitStats>> => {
+      const promises = habitIds.map(habitId => 
+        api(`/stats/${habitId}/stats/streak`)
+          .then(response => ({ habitId, data: response.data }))
+      );
+      
+      const results = await Promise.all(promises);
+      const dataMap: Record<string, HabitStats> = {};
       
       results.forEach(({ habitId, data }) => {
         dataMap[habitId] = data;

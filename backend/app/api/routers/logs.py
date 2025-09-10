@@ -25,35 +25,69 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
 
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")
+
   log_date = payload.date or date.today()
   existing = db.query(HabitLog).filter(HabitLog.habit_id ==
                                        habit.id, HabitLog.date == log_date).first()
 
+  # Calculate total quantity after adding new quantity
+  current_quantity = existing.quantity if existing else 0
+  new_total_quantity = current_quantity + payload.quantity
+
+  # Check if new total would exceed the habit's target
+  if new_total_quantity > habit.target:
+    remaining = habit.target - current_quantity
+    if remaining <= 0:
+      raise HTTPException(
+          status_code=400,
+          detail=f"Habit target already reached for {log_date}. Target: {habit.target}, Current: {current_quantity}"
+      )
+    else:
+      raise HTTPException(
+          status_code=400,
+          detail=f"Quantity would exceed habit target. Target: {habit.target}, Current: {current_quantity}, Requested: {payload.quantity}, Remaining: {remaining}"
+      )
+
   if existing:
-    raise HTTPException(status_code=409, detail="Log for date already exists")
+    # Update existing log by adding quantity
+    existing.quantity += payload.quantity
+    db.commit()
+    db.refresh(existing)
+    return HabitLogOut(**{
+        "id": str(existing.id),
+        "habit_id": str(existing.habit_id),
+        "date": existing.date,
+        "quantity": existing.quantity,
+        "created_at": existing.created_at
+    })
+  else:
+    # Create new log with quantity
+    log = HabitLog(habit_id=habit.id, date=log_date, quantity=payload.quantity)
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    return HabitLogOut(**{
+        "id": str(log.id),
+        "habit_id": str(log.habit_id),
+        "date": log.date,
+        "quantity": log.quantity,
+        "created_at": log.created_at
+    })
 
-  log = HabitLog(habit_id=habit.id, date=log_date)
 
-  db.add(log)
-  db.commit()
-  db.refresh(log)
+# @router.get("/{habit_id}/logs", response_model=list[HabitLogOut])
+# def list_logs(habit_id: str, range: Literal["week", "month"] | None = Query(default=None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+#   habit = db.query(Habit).filter(Habit.id == UUID(
+#       habit_id), Habit.user_id == current_user.id).first()
 
-  return HabitLogOut(**{"id": str(log.id), "habit_id": str(log.habit_id), "date": log.date, "created_at": log.created_at})
+#   if not habit:
+#     raise HTTPException(status_code=404, detail="Habit not found")
 
+#   q = db.query(HabitLog).filter(HabitLog.habit_id ==
+#                                 habit.id).order_by(HabitLog.date.desc())
+#   logs = q.all()
 
-@router.get("/{habit_id}/logs", response_model=list[HabitLogOut])
-def list_logs(habit_id: str, range: Literal["week", "month"] | None = Query(default=None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit = db.query(Habit).filter(Habit.id == UUID(
-      habit_id), Habit.user_id == current_user.id).first()
-
-  if not habit:
-    raise HTTPException(status_code=404, detail="Habit not found")
-
-  q = db.query(HabitLog).filter(HabitLog.habit_id ==
-                                habit.id).order_by(HabitLog.date.desc())
-  logs = q.all()
-
-  return [HabitLogOut(**{"id": str(l.id), "habit_id": str(l.habit_id), "date": l.date, "created_at": l.created_at}) for l in logs]
+#   return [HabitLogOut(**{"id": str(l.id), "habit_id": str(l.habit_id), "date": l.date, "quantity": l.quantity, "created_at": l.created_at}) for l in logs]
 
 
 @router.get("/today", response_model=list[TodayHabitLog])
@@ -81,14 +115,24 @@ def get_today_habits_logs(
       )
   ).all()
 
-  # Create a dict for faster lookup
-  today_logs_dict = {log.habit_id: log for log in today_logs}
+  # Sum quantities per habit for current_progress
+  habit_log_counts = {}
+  for log in today_logs:
+    habit_log_counts[log.habit_id] = habit_log_counts.get(
+        log.habit_id, 0) + log.quantity
+
+  # Get the most recent log for each habit (for log_id and log_created_at)
+  today_logs_dict = {}
+  for log in today_logs:
+    if log.habit_id not in today_logs_dict:
+      today_logs_dict[log.habit_id] = log
 
   # Build response
   result = []
   for habit in habits:
+    current_progress = habit_log_counts.get(habit.id, 0)
+    logged_today = current_progress > 0
     today_log = today_logs_dict.get(habit.id)
-    logged_today = today_log is not None
 
     result.append(TodayHabitLog(
         habit_id=str(habit.id),
@@ -97,6 +141,7 @@ def get_today_habits_logs(
         frequency=habit.frequency.value,
         target=habit.target,
         logged_today=logged_today,
+        current_progress=current_progress,
         log_id=str(today_log.id) if today_log else None,
         log_created_at=today_log.created_at if today_log else None
     ))

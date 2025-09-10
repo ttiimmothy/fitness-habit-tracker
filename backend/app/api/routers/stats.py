@@ -18,9 +18,12 @@ router = APIRouter()
 
 @router.get("/overview", response_model=dict)
 def overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit_ids = [h.id for h in db.query(Habit.id).filter(Habit.user_id == current_user.id).all()]
-  logs = db.query(HabitLog).filter(HabitLog.habit_id.in_(habit_ids)).all() if habit_ids else []
+  habit_ids = [h.id for h in db.query(Habit.id).filter(
+      Habit.user_id == current_user.id).all()]
+  logs = db.query(HabitLog).filter(
+      HabitLog.habit_id.in_(habit_ids)).all() if habit_ids else []
   return build_week_overview(logs)
+
 
 @router.get("/daily-counts", response_model=list[DailyLogCount])
 def get_daily_log_counts(
@@ -70,7 +73,7 @@ def get_daily_log_counts(
   return result
 
 
-@router.get("/{habit_id}/stats/steak", response_model=HabitStats)
+@router.get("/{habit_id}/stats/streak", response_model=HabitStats)
 def get_habit_stats_streak(
     habit_id: str,
     db: Session = Depends(get_db),
@@ -87,25 +90,27 @@ def get_habit_stats_streak(
   total_logs = db.query(func.count(HabitLog.id)).filter(
       HabitLog.habit_id == habit.id).scalar() or 0
 
-  # Get all logs ordered by date
-  logs = db.query(HabitLog.date).filter(
+  # Get all logs ordered by date with quantities
+  logs = db.query(HabitLog.date, HabitLog.quantity).filter(
       HabitLog.habit_id == habit.id
   ).order_by(HabitLog.date.desc()).all()
 
-  log_dates = [log.date for log in logs]
+  # Filter logs where quantity >= target (successful completion)
+  successful_logs = [log for log in logs if log.quantity >= habit.target]
+  successful_dates = [log.date for log in successful_logs]
 
-  # Calculate streaks
+  # Calculate streaks based on successful completions
   current_streak = 0
   longest_streak = 0
   temp_streak = 0
-  last_log_date = log_dates[0] if log_dates else None
+  last_log_date = successful_dates[0] if successful_dates else None
 
-  if log_dates:
+  if successful_dates:
     # Calculate current streak (consecutive days from today backwards)
     today = date.today()
     current_date = today
 
-    for log_date in log_dates:
+    for log_date in successful_dates:
       if log_date == current_date:
         current_streak += 1
         current_date -= timedelta(days=1)
@@ -113,10 +118,10 @@ def get_habit_stats_streak(
         break
 
     # Calculate longest streak
-    if len(log_dates) > 1:
+    if len(successful_dates) > 1:
       temp_streak = 1
-      for i in range(1, len(log_dates)):
-        if (log_dates[i-1] - log_dates[i]).days == 1:
+      for i in range(1, len(successful_dates)):
+        if (successful_dates[i-1] - successful_dates[i]).days == 1:
           temp_streak += 1
         else:
           longest_streak = max(longest_streak, temp_streak)
@@ -125,31 +130,33 @@ def get_habit_stats_streak(
     else:
       longest_streak = 1
 
-  # Calculate completion rate
+  # Calculate completion rate based on successful completions
+  successful_completions = len(successful_dates)
+
   # For daily habits, calculate based on days since creation
   # For weekly habits, calculate based on weeks since creation
   if habit.frequency.value == "daily":
     days_since_creation = (date.today() - habit.created_at.date()).days + 1
-    completion_rate = (total_logs / days_since_creation) * \
+    completion_rate = (successful_completions / days_since_creation) * \
         100 if days_since_creation > 0 else 0
   elif habit.frequency.value == "weekly":
     weeks_since_creation = (
         (date.today() - habit.created_at.date()).days // 7) + 1
-    completion_rate = (total_logs / weeks_since_creation) * \
+    completion_rate = (successful_completions / weeks_since_creation) * \
         100 if weeks_since_creation > 0 else 0
   else:  # monthly
     months_since_creation = (
         (date.today() - habit.created_at.date()).days // 30) + 1
-    completion_rate = (total_logs / months_since_creation) * \
+    completion_rate = (successful_completions / months_since_creation) * \
         100 if months_since_creation > 0 else 0
 
   return HabitStats(
-    habit_id=str(habit.id),
-    current_streak=current_streak,
-    longest_streak=longest_streak
-    # total_logs=total_logs,
-    # completion_rate=round(completion_rate, 2),
-    # last_log_date=last_log_date
+      habit_id=str(habit.id),
+      current_streak=current_streak,
+      longest_streak=longest_streak
+      # total_logs=total_logs,
+      # completion_rate=round(completion_rate, 2),
+      # last_log_date=last_log_date
   )
 
 
@@ -171,8 +178,8 @@ def get_habit_daily_progress(
   end_date = date.today()
   start_date = end_date - timedelta(days=days-1)
 
-  # Get all logs for this habit in the date range
-  logs = db.query(HabitLog.date).filter(
+  # Get all logs for this habit in the date range with quantities
+  logs = db.query(HabitLog.date, HabitLog.quantity).filter(
       and_(
           HabitLog.habit_id == habit.id,
           HabitLog.date >= start_date,
@@ -180,24 +187,23 @@ def get_habit_daily_progress(
       )
   ).all()
 
-  # Convert to set for faster lookup
-  logged_dates = {log.date for log in logs}
+  # Convert to dict for faster lookup with quantities
+  logged_quantities = {log.date: log.quantity for log in logs}
 
   # Generate progress data for each day
   result = []
   current_date = start_date
   while current_date <= end_date:
-    # Check if habit was completed on this date
-    completed = current_date in logged_dates
-    actual = 1 if completed else 0
+    # Get actual quantity logged for this date
+    actual_quantity = logged_quantities.get(current_date, 0)
+    completed = actual_quantity >= habit.target
 
     result.append(HabitDailyProgress(
         date=current_date,
         completed=completed,
         target=habit.target,
-        actual=actual
+        actual=actual_quantity
     ))
     current_date += timedelta(days=1)
 
   return result
-

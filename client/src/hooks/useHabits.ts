@@ -28,6 +28,7 @@ export type TodayHabitLog = {
   frequency: string;
   target: number;
   logged_today: boolean;
+  current_progress: number; // How many times logged today
   log_id: string | null;
   log_created_at: string | null;
 };

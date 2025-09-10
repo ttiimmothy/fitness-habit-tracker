@@ -1,6 +1,7 @@
 ---
 import "../../styles/global.css";
 import IndividualHabitChartIsland from "../../islands/IndividualHabitChartIsland";
+import IndividualHabitQuickLogIsland from "../../islands/IndividualHabitQuickLogIsland";
 import HabitPageHeader from "../../islands/react/HabitPageHeader";
 import BackButton from "../../islands/react/BackButton";
 import Layout from "../../layouts/Layout.astro"
@@ -13,7 +14,16 @@ export const prerender = false;
   <main class="max-w-5xl mx-auto p-6 space-y-6">
     <BackButton href="/" client:load />
     <HabitPageHeader client:load />
-    <IndividualHabitChartIsland client:load />
+    
+    <!-- Quick Log Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-1">
+        <IndividualHabitQuickLogIsland client:load />
+      </div>
+      <div class="lg:col-span-2">
+        <IndividualHabitChartIsland client:load />
+      </div>
+    </div>
   </main>
   </AuthGuardIsland>
 </Layout>

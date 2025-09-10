@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import {HabitCardIsland} from "../islands/HabitCardIsland";
-import StreakCounter from "../islands/react/StreakCounter";
+import {StreakCounterIsland} from "../islands/StreakCounterIsland";
 import {ProgressChartIsland} from "../islands/ProgressChartIsland";
 import {DashboardHeader} from "../islands/react/DashboardHeader"
 import {AuthGuardIsland} from "../islands/AuthGuardIsland";
@@ -15,7 +15,7 @@ import Layout from "../layouts/Layout.astro";
     </header>
     
     <section class="grid md:grid-cols-2 gap-4">
-      <StreakCounter client:load />
+      <StreakCounterIsland client:load />
       <ProgressChartIsland client:load />
     </section>
     <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

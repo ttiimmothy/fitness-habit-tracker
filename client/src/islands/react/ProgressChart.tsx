@@ -10,37 +10,45 @@ type ChartDataPoint = {
 };
 
 // Custom Tooltip component for better dark mode styling
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-          {new Date(label).toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            month: 'short', 
-            day: 'numeric' 
+const createCustomTooltip = (habits: any[]) => {
+  return ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+            {new Date(label).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              month: 'short', 
+              day: 'numeric' 
+            })}
+          </p>
+          {payload.map((entry: any, index: number) => {
+            const actualQuantity = entry.value;
+            const isCompleted = actualQuantity > 0;
+            
+            // Find the habit to get its target
+            const habit = habits?.find((h: any) => h.title === entry.dataKey);
+            const target = habit?.target || 1;
+            
+            return (
+              <div key={index} className="flex items-center gap-2 mb-1">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <p className="text-sm" style={{ color: entry.color }}>
+                  {entry.dataKey}: <span className="font-semibold">
+                    {isCompleted ? `✓ ${actualQuantity}/${target} logged` : `✗ 0/${target} logged`}
+                  </span>
+                </p>
+              </div>
+            );
           })}
-        </p>
-        {payload.map((entry: any, index: number) => {
-          const isCompleted = entry.value > 0;
-          return (
-            <div key={index} className="flex items-center gap-2 mb-1">
-              <div 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: entry.color }}
-              />
-              <p className="text-sm" style={{ color: entry.color }}>
-                {entry.dataKey}: <span className="font-semibold">
-                  {isCompleted ? '✓ Completed' : '✗ Not completed'}
-                </span>
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-  return null;
+        </div>
+      );
+    }
+    return null;
+  };
 };
 
 export default function ProgressChart() {
@@ -156,7 +164,7 @@ export default function ProgressChart() {
             tick={{ fill: 'currentColor', fontSize: 12 }}
             axisLine={{ stroke: 'currentColor' }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={createCustomTooltip(habits || [])} />
           <Legend />
           {habits.map((habit, index) => (
             <Line

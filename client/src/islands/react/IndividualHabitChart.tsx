@@ -11,28 +11,45 @@ type ChartDataPoint = {
 };
 
 // Custom Tooltip component for better dark mode styling
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    const isCompleted = payload[0].value > 0;
-    return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-          {new Date(label).toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            month: 'short', 
-            day: 'numeric' 
-          })}
-        </p>
-        <p className={`text-sm font-semibold ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-          {isCompleted ? '✓ Completed' : '✗ Not completed'}
-        </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Progress: {payload[0].value}
-        </p>
-      </div>
-    );
-  }
-  return null;
+const createCustomTooltip = (selectedHabit: any) => {
+  return ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const loggedQuantity = payload[0].value;
+      const target = selectedHabit?.target || 1;
+      const isCompleted = loggedQuantity >= target;
+      const isSemiCompleted = loggedQuantity > 0 && loggedQuantity < target;
+      
+      return (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+            {new Date(label).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              month: 'short', 
+              day: 'numeric' 
+            })}
+          </p>
+          <p className={`text-sm font-semibold ${
+            isCompleted 
+              ? 'text-green-600 dark:text-green-400' 
+              : isSemiCompleted 
+              ? 'text-yellow-600 dark:text-yellow-400' 
+              : 'text-red-600 dark:text-red-400'
+          }`}>
+            {isCompleted 
+              ? '✓ Completed' 
+              : isSemiCompleted 
+              ? '⚠ Semi completed' 
+              : '✗ Not completed'
+            }
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Logged: {loggedQuantity} / {target}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 };
 
 export default function IndividualHabitChart() {
@@ -138,7 +155,7 @@ export default function IndividualHabitChart() {
             axisLine={{ stroke: 'currentColor' }}
             domain={[0, selectedHabit.target]}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={createCustomTooltip(selectedHabit)} />
           <Line 
             type="monotone" 
             dataKey="progress" 
