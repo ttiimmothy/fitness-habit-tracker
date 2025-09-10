@@ -4,6 +4,7 @@ import { useLogHabit, useTodayHabitLogs } from '../../hooks/useHabitLog';
 import { useDeleteHabit } from '../../hooks/useHabits';
 import UpdateHabitSidebar from './UpdateHabitSidebar';
 import { Edit } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function IndividualHabitQuickLog() {
   const { selectedHabit, clearSelectedHabit } = useHabitStore();
@@ -53,10 +54,12 @@ export default function IndividualHabitQuickLog() {
     
     try {
       await deleteHabitMutation.mutateAsync(selectedHabit.id);
+      toast.success('Habit deleted successfully!');
       clearSelectedHabit();
       // Redirect to dashboard after successful deletion
       window.location.href = '/';
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to delete habit');
       console.error('Failed to delete habit:', error);
     }
   };

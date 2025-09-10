@@ -1,6 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
 import { useRegister } from '../../hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '../../schemas/authSchemas';
 
@@ -30,7 +31,11 @@ export default function RegisterForm() {
       },
       {
         onSuccess: () => {
+          toast.success('Registration successful!');
           window.location.href = '/';
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || error?.message || 'Registration failed');
         },
       }
     );

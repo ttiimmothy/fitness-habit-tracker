@@ -19,3 +19,4 @@ client/.env
 .DS_Store
 **/instructions/*
 spec.txt
+nginx*

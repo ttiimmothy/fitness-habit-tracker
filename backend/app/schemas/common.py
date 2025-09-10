@@ -64,6 +64,7 @@ class HabitStats(BaseModel):
   habit_id: UUIDStr
   current_streak: int
   longest_streak: int
+  completion_rate: float
 
 
 class HabitDailyProgress(BaseModel):

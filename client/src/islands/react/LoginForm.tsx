@@ -1,6 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
 import { useLogin } from '../../hooks/useAuth';
 import { loginSchema, type LoginFormData } from '../../schemas/authSchemas';
 
@@ -18,7 +19,11 @@ export default function LoginForm() {
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
+        toast.success('Login successful!');
         window.location.href = '/';
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || error?.message || 'Login failed');
       },
     });
   };

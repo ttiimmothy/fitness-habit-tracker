@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
 import { createHabitSchema, CreateHabitFormData } from '../../schemas/habitSchemas';
 import { useUpdateHabit } from '../../hooks/useHabits';
 
@@ -84,8 +85,10 @@ export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHa
         id: habit.id,
         data,
       });
+      toast.success('Habit updated successfully!');
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to update habit');
       console.error('Failed to update habit:', error);
     }
   };

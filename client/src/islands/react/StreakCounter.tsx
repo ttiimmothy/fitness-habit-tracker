@@ -60,6 +60,7 @@ export default function StreakCounter() {
           const stats = habitsStats?.[habit.id];
           const currentStreak = stats?.current_streak || 0;
           const longestStreak = stats?.longest_streak || 0;
+          const completionRate = stats?.completion_rate || 0;
           
           return (
             <div key={habit.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -90,6 +91,17 @@ export default function StreakCounter() {
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     best
+                  </div>
+                </div>
+                
+                <div className="text-gray-300 dark:text-gray-600">|</div>
+                
+                <div className="text-center">
+                  <div className="font-semibold text-purple-600 dark:text-purple-400">
+                    {Math.round(completionRate)}%
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    completion
                   </div>
                 </div>
               </div>

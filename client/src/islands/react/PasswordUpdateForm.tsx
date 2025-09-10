@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import toast from 'react-hot-toast';
 import { api } from '../../lib/api';
 
 // Password update validation schema
@@ -30,7 +31,6 @@ interface PasswordUpdateFormProps {
 
 export default function PasswordUpdateForm({ onSuccess }: PasswordUpdateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const {
     register,
@@ -43,7 +43,6 @@ export default function PasswordUpdateForm({ onSuccess }: PasswordUpdateFormProp
 
   const onSubmit = async (data: PasswordUpdateFormData) => {
     setIsSubmitting(true);
-    setSubmitMessage(null);
 
     try {
       await api.post('/auth/change-password', {
@@ -51,23 +50,17 @@ export default function PasswordUpdateForm({ onSuccess }: PasswordUpdateFormProp
         newPassword: data.newPassword,
       });
 
-      setSubmitMessage({
-        type: 'success',
-        message: 'Password updated successfully!',
-      });
+      toast.success('Password updated successfully!');
       reset();
       
       // Call onSuccess callback if provided
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
-        }, 1500); // Close sidebar after 1.5 seconds
+        }, 1000); // Close sidebar after 1 second
       }
     } catch (error: any) {
-      setSubmitMessage({
-        type: 'error',
-        message: error?.response?.data?.message || error?.message || 'Failed to update password',
-      });
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to update password');
     } finally {
       setIsSubmitting(false);
     }
@@ -138,19 +131,6 @@ export default function PasswordUpdateForm({ onSuccess }: PasswordUpdateFormProp
             )}
           </div>
 
-          {submitMessage && (
-            <div className={`p-3 rounded-md ${
-              submitMessage.type === 'success' 
-                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-            }`}>
-              <p className={`text-sm ${
-                submitMessage.type === 'success' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {submitMessage.message}
-              </p>
-            </div>
-          )}
 
           <div className="flex justify-end">
             <button

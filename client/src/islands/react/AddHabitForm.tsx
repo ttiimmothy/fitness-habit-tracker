@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { createHabitSchema, CreateHabitFormData } from '../../schemas/habitSchemas';
 import { useCreateHabit } from '../../hooks/useHabits';
 
@@ -42,7 +43,6 @@ const categoryOptions = [
 
 export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
   const createHabitMutation = useCreateHabit();
 
@@ -51,7 +51,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
+    // watch,
   } = useForm<CreateHabitFormData>({
     resolver: zodResolver(createHabitSchema),
     defaultValues: {
@@ -65,28 +65,20 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
 
   const onSubmit = async (data: CreateHabitFormData) => {
     setIsSubmitting(true);
-    setSubmitMessage(null);
 
     try {
       await createHabitMutation.mutateAsync(data);
       
-      setSubmitMessage({
-        type: 'success',
-        message: 'Habit created successfully!',
-      });
-      
+      toast.success('Habit created successfully!');
       reset();
       
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
-        }, 1500);
+        }, 1000);
       }
     } catch (error: any) {
-      setSubmitMessage({
-        type: 'error',
-        message: error?.response?.data?.message || error?.message || 'Failed to create habit',
-      });
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to create habit');
     } finally {
       setIsSubmitting(false);
     }
@@ -215,18 +207,6 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
           )}
         </div> */}
 
-        {/* Submit Message */}
-        {submitMessage && (
-          <div
-            className={`p-3 rounded-md ${
-              submitMessage.type === 'success'
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
-                : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
-            }`}
-          >
-            {submitMessage.message}
-          </div>
-        )}
 
         {/* Submit Button */}
         <div className="flex justify-end pt-4">

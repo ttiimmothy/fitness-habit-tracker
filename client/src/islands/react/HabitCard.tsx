@@ -5,6 +5,7 @@ import AddHabitButton from './AddHabitButton';
 import {useLogHabit, useTodayHabitLogs} from "../../hooks/useHabitLog";
 import { Trash2, Edit } from 'lucide-react';
 import UpdateHabitSidebar from './UpdateHabitSidebar';
+import toast from 'react-hot-toast';
 
 export default function HabitCard() {
   const { data: habits, isLoading, error } = useHabits();
@@ -73,8 +74,10 @@ export default function HabitCard() {
   const handleDeleteHabit = async (habitId: string) => {
     try {
       await deleteHabitMutation.mutateAsync(habitId);
+      toast.success('Habit deleted successfully!');
       setShowDeleteConfirm(null);
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to delete habit');
       console.error('Failed to delete habit:', error);
     }
   };

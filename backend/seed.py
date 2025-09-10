@@ -36,19 +36,19 @@ def seed() -> None:
     db.refresh(weekly)
 
     # logs for last 14 days for daily
-    start = date.today() - timedelta(days=14)
-    for i in range(15):
-      d = start + timedelta(days=i)
-      if i % 2 == 0:
-        if not db.query(HabitLog).filter(HabitLog.habit_id == daily.id, HabitLog.date == d).first():
-          db.add(HabitLog(habit_id=daily.id, date=d))
+    # start = date.today() - timedelta(days=14)
+    # for i in range(15):
+    #   d = start + timedelta(days=i)
+    #   if i % 2 == 0:
+    #     if not db.query(HabitLog).filter(HabitLog.habit_id == daily.id, HabitLog.date == d).first():
+    #       db.add(HabitLog(habit_id=daily.id, date=d))
 
-    # logs for last 4 weeks for weekly (every Tue/Thu)
-    for i in range(28):
-      d = date.today() - timedelta(days=i)
-      if d.weekday() in (1, 3):
-        if not db.query(HabitLog).filter(HabitLog.habit_id == weekly.id, HabitLog.date == d).first():
-          db.add(HabitLog(habit_id=weekly.id, date=d))
+    # # logs for last 4 weeks for weekly (every Tue/Thu)
+    # for i in range(28):
+    #   d = date.today() - timedelta(days=i)
+    #   if d.weekday() in (1, 3):
+    #     if not db.query(HabitLog).filter(HabitLog.habit_id == weekly.id, HabitLog.date == d).first():
+    #       db.add(HabitLog(habit_id=weekly.id, date=d))
 
     db.commit()
   finally:

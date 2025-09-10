@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useLogout } from '../../hooks/useAuth';
+import { useHabits } from '../../hooks/useHabits';
+import { useMultipleHabitsStats } from '../../hooks/useStats';
 import PasswordUpdateForm from './PasswordUpdateForm';
 
 export default function UserProfile() {
@@ -8,6 +10,19 @@ export default function UserProfile() {
   const logoutMutation = useLogout();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPasswordSidebarOpen, setIsPasswordSidebarOpen] = useState(false);
+  
+  // Fetch habits and stats data
+  const { data: habits, isLoading: habitsLoading } = useHabits();
+  const { data: habitsStats, isLoading: statsLoading } = useMultipleHabitsStats(habits?.map(h => h.id) || []);
+
+  // Calculate stats
+  const activeHabits = habits?.length || 0;
+  const currentStreak = habitsStats 
+    ? Math.max(...Object.values(habitsStats).map(stat => stat.current_streak), 0)
+    : 0;
+  const averageCompletionRate = habitsStats && Object.keys(habitsStats).length > 0
+    ? Math.round(Object.values(habitsStats).reduce((sum, stat) => sum + stat.completion_rate, 0) / Object.keys(habitsStats).length)
+    : 0;
 
   useEffect(() => {
     setIsLoaded(true);
@@ -182,16 +197,22 @@ export default function UserProfile() {
           <div className="px-6 py-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">0</div>
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {habitsLoading ? '...' : activeHabits}
+                </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Active Habits</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">0</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {statsLoading ? '...' : currentStreak}
+                </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Current Streak</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">0</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total Completions</div>
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {statsLoading ? '...' : `${averageCompletionRate}%`}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Avg Completion Rate</div>
               </div>
             </div>
           </div>

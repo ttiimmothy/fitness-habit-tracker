@@ -130,32 +130,50 @@ def get_habit_stats_streak(
     else:
       longest_streak = 1
 
-  # Calculate completion rate based on successful completions
-  successful_completions = len(successful_dates)
-
-  # For daily habits, calculate based on days since creation
-  # For weekly habits, calculate based on weeks since creation
+  # Calculate completion rate based on frequency
   if habit.frequency.value == "daily":
+    # For daily habits: count unique successful days / total days
+    unique_successful_dates = list(set(successful_dates))
     days_since_creation = (date.today() - habit.created_at.date()).days + 1
-    completion_rate = (successful_completions / days_since_creation) * \
+    completion_rate = (len(unique_successful_dates) / days_since_creation) * \
         100 if days_since_creation > 0 else 0
   elif habit.frequency.value == "weekly":
+    # For weekly habits: count weeks with at least one successful completion
     weeks_since_creation = (
         (date.today() - habit.created_at.date()).days // 7) + 1
-    completion_rate = (successful_completions / weeks_since_creation) * \
+
+    # Group successful dates by week and count weeks with at least one success
+    successful_weeks = set()
+    for log_date in successful_dates:
+      # Calculate which week this date falls into (weeks since habit creation)
+      days_since_creation = (log_date - habit.created_at.date()).days
+      week_number = days_since_creation // 7
+      successful_weeks.add(week_number)
+
+    completion_rate = (len(successful_weeks) / weeks_since_creation) * \
         100 if weeks_since_creation > 0 else 0
   else:  # monthly
+    # For monthly habits: count months with at least one successful completion
     months_since_creation = (
         (date.today() - habit.created_at.date()).days // 30) + 1
-    completion_rate = (successful_completions / months_since_creation) * \
+
+    # Group successful dates by month and count months with at least one success
+    successful_months = set()
+    for log_date in successful_dates:
+      # Calculate which month this date falls into (months since habit creation)
+      days_since_creation = (log_date - habit.created_at.date()).days
+      month_number = days_since_creation // 30
+      successful_months.add(month_number)
+
+    completion_rate = (len(successful_months) / months_since_creation) * \
         100 if months_since_creation > 0 else 0
 
   return HabitStats(
       habit_id=str(habit.id),
       current_streak=current_streak,
-      longest_streak=longest_streak
+      longest_streak=longest_streak,
       # total_logs=total_logs,
-      # completion_rate=round(completion_rate, 2),
+      completion_rate=round(completion_rate, 2)
       # last_log_date=last_log_date
   )
 

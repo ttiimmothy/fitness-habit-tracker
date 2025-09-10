@@ -6,6 +6,7 @@ export type HabitStats = {
   habit_id: string;
   current_streak: number;
   longest_streak: number;
+  completion_rate: number;
 };
 
 // Fetch daily progress for a specific habit
