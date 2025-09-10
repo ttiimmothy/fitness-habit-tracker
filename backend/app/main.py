@@ -34,7 +34,7 @@ def create_app() -> FastAPI:
 
   app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.client_url,
+    allow_origins=[settings.client_url, "https://fitness-habit-tracker.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

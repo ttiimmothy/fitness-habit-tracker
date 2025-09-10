@@ -64,7 +64,7 @@ export default function LoginForm() {
       {loginMutation.error && (
         <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
           <p className="text-sm text-red-600">
-            {loginMutation.error?.response?.data?.message || 
+            {loginMutation.error?.response?.data?.title || 
              loginMutation.error?.message || 
              'Login failed'}
           </p>

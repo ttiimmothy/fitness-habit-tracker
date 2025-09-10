@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://fitness-habit-tracker-backend.ttiimmothy.com/api/$1"
+    }
+  ]
+}
