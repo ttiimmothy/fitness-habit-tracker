@@ -23,6 +23,6 @@ docker compose exec backend poetry run python seed.py
 
 - POST /auth/login { email, password } → { accessToken, user }
 - GET /auth/me → { user }
-- GET /habits, POST /habits
-- POST /habits/:id/log, GET /habits/:id/logs
-- GET /stats/overview
+- GET /habits, POST /habits, PUT /habits, DELETE /habits
+- POST /habits/logs/:id/log, GET /habits/logs/today
+- GET /stats/{habit_id}/stats/streak, /stats/{habit_id}/daily-progress
