@@ -1,33 +1,26 @@
 ---
 import "../styles/global.css";
-import IndexRedirect from "../islands/react/IndexRedirect";
+import {HabitCardIsland} from "../islands/HabitCardIsland";
+import StreakCounter from "../islands/react/StreakCounter";
+import {ProgressChartIsland} from "../islands/ProgressChartIsland";
+import {DashboardHeader} from "../islands/react/DashboardHeader"
+import {AuthGuardIsland} from "../islands/AuthGuardIsland";
+import Layout from "../layouts/Layout.astro";
 ---
-
-<!-- <script>
-  async function checkAuth() {
-    try {
-      const { api } = await import('../lib/api');
-      try {
-        // Call the /me API to verify the token and get user info
-        const response = await api.get("/auth/me");
-        const userData = response.data;
-        // Redirect to dashboard
-        if (userData.user) {
-          window.location.href = '/dashboard';
-        } else {
-          window.location.href = '/login';
-        }
-      } catch (e) {
-        console.error('Failed to verify token:', e);
-        window.location.href = '/login';
-      }
-    } catch (e) {
-      console.error('Auth check failed:', e);
-      window.location.href = '/login';
-    }
-  }
-  checkAuth()
-</script> -->
-
-<IndexRedirect client:load />
-<!-- <main class="p-8 text-center">Redirecting…</main> -->
+<Layout>
+<AuthGuardIsland client:load>
+  <main class="max-w-5xl mx-auto p-6 space-y-6">
+    <header>
+      <DashboardHeader client:load/>
+    </header>
+    
+    <section class="grid md:grid-cols-2 gap-4">
+      <StreakCounter client:load />
+      <ProgressChartIsland client:load />
+    </section>
+    <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <HabitCardIsland client:load />
+    </section>
+  </main>
+</AuthGuardIsland>
+</Layout>

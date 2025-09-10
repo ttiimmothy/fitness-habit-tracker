@@ -38,7 +38,7 @@ export default function HabitPageHeader() {
           {selectedHabit.category}
         </span>
         <span>Target: {selectedHabit.target}</span>
-        <span>•</span>
+        {/* <span>•</span> */}
         <span className="capitalize">{selectedHabit.frequency}</span>
       </div>
     </div>

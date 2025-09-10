@@ -1,5 +1,5 @@
-import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.get_current_user import get_current_user
@@ -56,8 +56,9 @@ def create_habit(payload: HabitCreate, db: Session = Depends(get_db), current_us
 
 
 @router.get("/{habit_id}", response_model=HabitOut)
-def get_habit(habit_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit = db.query(Habit).filter(Habit.id == uuid.UUID(habit_id), Habit.user_id == current_user.id).first()
+def get_habit(
+    habit_id: UUID = Path(..., description="Habit ID (UUID)"),db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+  habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == current_user.id).first()
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")
   return HabitOut(**{
@@ -74,7 +75,7 @@ def get_habit(habit_id: str, db: Session = Depends(get_db), current_user: User =
 
 @router.put("/{habit_id}", response_model=HabitOut)
 def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit = db.query(Habit).filter(Habit.id == uuid.UUID(
+  habit = db.query(Habit).filter(Habit.id == UUID(
       habit_id), Habit.user_id == current_user.id).first()
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")
@@ -108,7 +109,7 @@ def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_
 
 @router.delete("/{habit_id}", status_code=204)
 def delete_habit(habit_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit = db.query(Habit).filter(Habit.id == uuid.UUID(habit_id), Habit.user_id == current_user.id).first()
+  habit = db.query(Habit).filter(Habit.id == UUID(habit_id), Habit.user_id == current_user.id).first()
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")
   db.delete(habit)

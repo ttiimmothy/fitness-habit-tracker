@@ -18,6 +18,7 @@ def get_current_user(request: Request,db: Annotated[Session, Depends(get_db)], c
 
   # Try to get token from cookie first
   token = request.cookies.get("access_token")
+  print(token)
 
   # Fallback to bearer token if no cookie
   if not token and credentials:

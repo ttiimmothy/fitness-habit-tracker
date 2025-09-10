@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date as dt_date
 from typing import Annotated, Optional
 
 from pydantic import BaseModel, Field
@@ -45,30 +45,38 @@ class HabitUpdate(BaseModel):
 class HabitLogOut(BaseModel):
   id: UUIDStr
   habit_id: UUIDStr
-  date: date
+  date: dt_date
   created_at: datetime
 
 
 class HabitLogCreate(BaseModel):
-  date: Optional[datetime] | None = None
+  date: Optional[dt_date] | None = None
 
 
 class DailyLogCount(BaseModel):
-  date: date
+  date: dt_date
   count: int
 
 
 class HabitStats(BaseModel):
   habit_id: UUIDStr
-  total_logs: int
   current_streak: int
   longest_streak: int
-  completion_rate: float  # percentage
-  last_log_date: date | None = None
 
 
 class HabitDailyProgress(BaseModel):
-  date: date
+  date: dt_date
   completed: bool
   target: int
   actual: int
+
+
+class TodayHabitLog(BaseModel):
+  habit_id: UUIDStr
+  title: str
+  category: str
+  frequency: str
+  target: int
+  logged_today: bool
+  log_id: UUIDStr | None = None
+  log_created_at: datetime | None = None

@@ -1,21 +1,21 @@
 ---
 import "../styles/global.css";
 import {LoginFormIsland} from "../islands/LoginFormIsland";
-import Layout from "./Layout.astro";
-import AuthGuard from "../islands/react/AuthGuard";
+import Layout from "../layouts/Layout.astro";
+import {AuthCheckIsland} from "../islands/AuthCheckIsland";
 ---
 
-<script>
+<!-- <script>
   async function checkAuth() {
     try {
       const { api } = await import('../lib/api');
       try {
         // Call the /me API to verify the token and get user info
-        const response = await api.get("/auth/me");
+        const response = await api("/auth/me");
         const userData = response.data;
         // Redirect to dashboard
         if (userData.user) {
-          window.location.href = '/dashboard';
+          window.location.href = '/';
         } else {
           window.location.href = '/login';
         }
@@ -27,14 +27,19 @@ import AuthGuard from "../islands/react/AuthGuard";
     }
   }
   checkAuth()
-</script>
+</script> -->
 
 <Layout>
+<AuthCheckIsland client:load>
 <main class="grid place-items-center p-6">
   <div class="w-full max-w-sm rounded-xl shadow p-6">
-    <h1 class="text-2xl font-semibold mb-4">Sign in</h1>
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-semibold mb-2">Fitness & Habit Tracker</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Sign in to your account</p>
+    </div>
     <LoginFormIsland client:load />
   </div>
   <!-- <a class="fixed top-4 right-4 text-sm opacity-70 hover:opacity-100" href="/">Home</a> -->
  </main>
+</AuthCheckIsland>
 </Layout>

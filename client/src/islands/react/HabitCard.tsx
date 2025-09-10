@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { useHabits, useLogHabit } from '../../hooks/useHabits';
+import { useHabits } from '../../hooks/useHabits';
 import { useHabitStore } from '../../store/habitStore';
 import AddHabitButton from './AddHabitButton';
+import {useLogHabit, useTodayHabitLogs} from "../../hooks/useHabitLog";
 
 export default function HabitCard() {
   const { data: habits, isLoading, error } = useHabits();
+  const { data: todayLogs, isLoading: todayLogsLoading } = useTodayHabitLogs();
   const logHabitMutation = useLogHabit();
   const [loggingHabits, setLoggingHabits] = useState<Set<string>>(new Set());
   const { setSelectedHabit } = useHabitStore();
@@ -33,7 +35,14 @@ export default function HabitCard() {
     setSelectedHabit(habit);
   };
 
-  if (isLoading) {
+  // Helper function to check if a habit is already logged today
+  const isHabitLoggedToday = (habitId: string) => {
+    if (!todayLogs) return false;
+    const todayLog = todayLogs.find(log => log.habit_id === habitId);
+    return todayLog?.logged_today || false;
+  };
+
+  if (isLoading || todayLogsLoading) {
     return (
       <div className="p-4 border rounded bg-white dark:bg-neutral-900">
         <div className="animate-pulse">
@@ -95,10 +104,21 @@ export default function HabitCard() {
           
           <button 
             onClick={(e) => handleQuickLog(e, habit.id)}
-            disabled={loggingHabits.has(habit.id)}
-            className="mt-2 inline-flex items-center justify-center bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded px-3 py-1 text-sm transition-colors"
+            disabled={loggingHabits.has(habit.id) || isHabitLoggedToday(habit.id)}
+            className={`mt-2 inline-flex items-center justify-center rounded px-3 py-1 text-sm transition-colors ${
+              isHabitLoggedToday(habit.id)
+                ? 'bg-gray-500 text-white cursor-not-allowed'
+                : loggingHabits.has(habit.id)
+                ? 'bg-green-400 text-white cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
           >
-            {loggingHabits.has(habit.id) ? 'Logging...' : 'Quick Log'}
+            {isHabitLoggedToday(habit.id) 
+              ? '✓ Logged Today' 
+              : loggingHabits.has(habit.id) 
+              ? 'Logging...' 
+              : 'Quick Log'
+            }
           </button>
         </a>
       ))}

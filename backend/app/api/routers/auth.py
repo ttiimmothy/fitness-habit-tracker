@@ -28,7 +28,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
     httponly=True,
     secure=True,  # Use HTTPS in production
     samesite="lax",
-    max_age=7 * 24 * 60 * 60  # 7 days
+    # max_age=7 * 24 * 60 * 60  # 7 days
   )
 
   return {
@@ -109,7 +109,7 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
     httponly=True,
     secure=True,  # Use HTTPS in production
     samesite="lax",
-    max_age=7 * 24 * 60 * 60  # 7 days
+    # max_age=7 * 24 * 60 * 60  # 7 days
   )
   
   return {

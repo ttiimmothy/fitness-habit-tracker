@@ -18,7 +18,7 @@ export default function LoginForm() {
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
-        window.location.href = '/dashboard';
+        window.location.href = '/';
       },
     });
   };

@@ -3,18 +3,18 @@ import "../../styles/global.css";
 import IndividualHabitChartIsland from "../../islands/IndividualHabitChartIsland";
 import HabitPageHeader from "../../islands/react/HabitPageHeader";
 import BackButton from "../../islands/react/BackButton";
-import Layout from "../Layout.astro"
-import AuthGuard from "../../islands/react/AuthGuard";
+import Layout from "../../layouts/Layout.astro"
+import {AuthGuardIsland} from "../../islands/AuthGuardIsland";
 
 export const prerender = false;
 ---
 <Layout>
-  <AuthGuard client:load>
-  <main class="max-w-3xl mx-auto p-6 space-y-6">
-    <BackButton href="/dashboard" client:load />
+  <AuthGuardIsland client:load>
+  <main class="max-w-5xl mx-auto p-6 space-y-6">
+    <BackButton href="/" client:load />
     <HabitPageHeader client:load />
     <IndividualHabitChartIsland client:load />
   </main>
-  </AuthGuard>
+  </AuthGuardIsland>
 </Layout>
 

@@ -30,7 +30,7 @@ export default function RegisterForm() {
       },
       {
         onSuccess: () => {
-          window.location.href = '/dashboard';
+          window.location.href = '/';
         },
       }
     );

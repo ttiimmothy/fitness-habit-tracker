@@ -73,11 +73,11 @@ export function useUser() {
     queryKey: authKeys.user(),
     queryFn: async (): Promise<User> => {
       const response = await api('/auth/me');
-      return response.data;
+      return response.data.user;
     },
-    // enabled: !!token,
+    enabled: !!user, // Only run query if we have a user in store
     initialData: user,
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
@@ -87,17 +87,19 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      // Call logout endpoint if you have one
+      // Call logout endpoint to clear server-side cookies
       try {
         await api.post('/auth/logout');
       } catch (error) {
-        // Even if logout fails on server, clear local state
+        // Even if logout fails on server, we'll still clear local state
         console.warn('Logout API call failed:', error);
       }
     },
     onSuccess: () => {
+      // Clear local state
       clear();
-      queryClient.clear(); // Clear all cached data
+      // Clear all cached data
+      queryClient.clear();
     },
     onError: () => {
       // Clear local state even if API call fails

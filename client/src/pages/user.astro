@@ -1,11 +1,11 @@
 ---
 import "../styles/global.css";
-import Layout from "./Layout.astro";
+import Layout from "../layouts/Layout.astro";
 import {UserProfileIsland} from "../islands/UserProfileIsland";
-import AuthGuard from "../islands/react/AuthGuard";
+import {AuthGuardIsland} from "../islands/AuthGuardIsland";
 ---
 <Layout>
-<AuthGuard client:load>
+<AuthGuardIsland client:load>
   <main class="max-w-5xl mx-auto p-6 space-y-6">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">User Profile</h1>
@@ -14,5 +14,5 @@ import AuthGuard from "../islands/react/AuthGuard";
     
     <UserProfileIsland client:load />
   </main>
-</AuthGuard>
+</AuthGuardIsland>
 </Layout>

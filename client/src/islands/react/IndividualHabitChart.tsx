@@ -1,7 +1,8 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useHabitStore } from '../../store/habitStore';
-import { useHabitDailyProgress, HabitDailyProgress } from '../../hooks/useHabits';
+import { HabitDailyProgress } from '../../hooks/useHabits';
+import { useHabitDailyProgress, useHabitStats } from "../../hooks/useStats";
 
 // Chart data type for recharts
 type ChartDataPoint = {
@@ -40,9 +41,16 @@ export default function IndividualHabitChart() {
   // Fetch daily progress data for the selected habit
   const { 
     data: dailyProgress, 
-    isLoading, 
-    error 
+    isLoading: dailyProgressLoading, 
+    error: dailyProgressError 
   } = useHabitDailyProgress(selectedHabit?.id || '', 7);
+
+  // Fetch habit stats (streaks, etc.)
+  const {
+    data: habitStats,
+    isLoading: statsLoading,
+    error: statsError
+  } = useHabitStats(selectedHabit?.id || '');
 
   // Transform API data to chart format
   const chartData: ChartDataPoint[] = dailyProgress?.map((day: HabitDailyProgress) => ({
@@ -66,7 +74,7 @@ export default function IndividualHabitChart() {
     );
   }
 
-  if (isLoading) {
+  if (dailyProgressLoading || statsLoading) {
     return (
       <div className="p-4 border rounded bg-white dark:bg-neutral-900">
         <div className="animate-pulse">
@@ -77,26 +85,40 @@ export default function IndividualHabitChart() {
     );
   }
 
-  if (error) {
+  if (dailyProgressError || statsError) {
     return (
       <div className="p-4 border rounded bg-white dark:bg-neutral-900 text-red-600 dark:text-red-400">
-        {error?.message || 'Failed to load habit progress'}
+        {dailyProgressError?.message || statsError?.message || 'Failed to load habit data'}
       </div>
     );
   }
 
   return (
-    <div className="p-4 border rounded bg-white dark:bg-neutral-900">
+    <div className="p-4 border rounded bg-white dark:bg-neutral-900 max-w-3xl mx-auto">
       <div className="mb-4">
         <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
           {selectedHabit.title} - Last 7 days
         </h3>
-        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span>Target: {selectedHabit.target}</span>
           <span>•</span>
           <span>Completed: {dailyProgress?.filter(day => day.completed).length || 0}/7 days</span>
           <span>•</span>
           <span>Success Rate: {dailyProgress ? Math.round((dailyProgress.filter(day => day.completed).length / dailyProgress.length) * 100) : 0}%</span>
+          {habitStats && (
+            <>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <span className="text-orange-500">🔥</span>
+                Current Streak: {habitStats.current_streak}
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <span className="text-yellow-500">⭐</span>
+                Longest Streak: {habitStats.longest_streak}
+              </span>
+            </>
+          )}
         </div>
       </div>
       <ResponsiveContainer width="100%" height={300}>
