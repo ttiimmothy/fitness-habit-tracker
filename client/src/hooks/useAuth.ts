@@ -82,7 +82,7 @@ export function useUser() {
 }
 
 export function useLogout() {
-  const clear = useAuthStore((s) => s.logout);
+  const setAuth = useAuthStore((s) => s.setAuth);
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -96,14 +96,14 @@ export function useLogout() {
       }
     },
     onSuccess: () => {
-      // Clear local state
-      clear();
+      // Clear user state
+      setAuth(null);
       // Clear all cached data
       queryClient.clear();
     },
     onError: () => {
-      // Clear local state even if API call fails
-      clear();
+      // Clear user state even if API call fails
+      setAuth(null);
       queryClient.clear();
     },
   });

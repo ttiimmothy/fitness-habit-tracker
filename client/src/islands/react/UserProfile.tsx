@@ -4,7 +4,7 @@ import { useLogout } from '../../hooks/useAuth';
 import PasswordUpdateForm from './PasswordUpdateForm';
 
 export default function UserProfile() {
-  const { user, setUser } = useAuthStore();
+  const { user } = useAuthStore();
   const logoutMutation = useLogout();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPasswordSidebarOpen, setIsPasswordSidebarOpen] = useState(false);
@@ -36,15 +36,14 @@ export default function UserProfile() {
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        // Don't call setUser(null) here - the mutation already handles it
+        // The mutation already handles setUser(null) via setAuth(null)
         // Add a small delay to ensure state cleanup completes
         setTimeout(() => {
           window.location.href = '/login';
         }, 100);
       },
       onError: () => {
-        // Even if logout fails, clear local state and redirect
-        setUser(null);
+        // The mutation already handles setUser(null) via setAuth(null)
         setTimeout(() => {
           window.location.href = '/login';
         }, 100);

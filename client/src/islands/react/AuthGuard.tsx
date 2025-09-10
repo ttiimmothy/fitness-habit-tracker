@@ -20,7 +20,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         // Try to get current user from API
         const response = await api('/auth/me');
         const userData = response.data;
-        setAuth(userData.user);
+        if (userData.user) {
+          setAuth(userData.user);
+        } else {
+          window.location.href = '/login';
+        }
       } catch (error) {
         console.error('Authentication check failed:', error);
         // Redirect to login if authentication fails
