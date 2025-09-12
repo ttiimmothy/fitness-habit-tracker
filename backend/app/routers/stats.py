@@ -227,7 +227,7 @@ def get_habit_daily_progress(
   return result
 
 
-@router.get("/today", response_model=list[TodayHabitLog])
+@router.get("/logs/today", response_model=list[TodayHabitLog])
 def get_today_habits_logs_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

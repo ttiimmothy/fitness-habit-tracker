@@ -14,7 +14,6 @@ export default function IndividualHabitQuickLog() {
   const deleteHabitMutation = useDeleteHabit();
   const [isLogging, setIsLogging] = useState(false);
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
 

@@ -15,7 +15,7 @@ export default function HabitCard() {
   const deleteHabitMutation = useDeleteHabit();
   const [loggingHabits, setLoggingHabits] = useState<Set<string>>(new Set());
   const [showQuantitySelector, setShowQuantitySelector] = useState<Set<string>>(new Set());
-  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
+  // const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showUpdateForm, setShowUpdateForm] = useState<string | null>(null);
   const { setSelectedHabit } = useHabitStore();
@@ -46,12 +46,12 @@ export default function HabitCard() {
     }
   };
 
-  const handleQuantitySelect = (habitId: string, quantity: number) => {
-    setSelectedQuantities(prev => ({
-      ...prev,
-      [habitId]: quantity
-    }));
-  };
+  // const handleQuantitySelect = (habitId: string, quantity: number) => {
+  //   setSelectedQuantities(prev => ({
+  //     ...prev,
+  //     [habitId]: quantity
+  //   }));
+  // };
 
   const toggleQuantitySelector = (e: React.MouseEvent, habitId: string) => {
     e.preventDefault();
@@ -101,10 +101,10 @@ export default function HabitCard() {
   };
 
   // Helper function to check if a habit is already logged today
-  const isHabitLoggedToday = (habitId: string) => {
-    const progress = getHabitProgress(habitId);
-    return progress.isComplete;
-  };
+  // const isHabitLoggedToday = (habitId: string) => {
+  //   const progress = getHabitProgress(habitId);
+  //   return progress.isComplete;
+  // };
 
   if (isLoading || todayLogsLoading) {
     return (
@@ -141,7 +141,7 @@ export default function HabitCard() {
         return (
           <a 
             key={habit.id} 
-            href={`/habit/${habit.id}`} 
+            href={`/habit/${habit.id}`}
             onClick={() => handleHabitClick(habit)}
             className="p-4 border rounded flex flex-col gap-2 bg-white dark:bg-neutral-900 hover:shadow-md transition-shadow"
           >
