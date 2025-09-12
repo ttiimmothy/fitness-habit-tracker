@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useHabitStore } from '../../store/habitStore';
-import { useLogHabit, useTodayHabitLogs } from '../../hooks/useHabitLog';
+import { useLogHabit } from '../../hooks/useHabitLog';
 import { useDeleteHabit } from '../../hooks/useHabits';
 import UpdateHabitSidebar from './UpdateHabitSidebar';
 import { Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
+import {useTodayHabitLogsStats} from "@/hooks/useStats";
 
 export default function IndividualHabitQuickLog() {
   const { selectedHabit, clearSelectedHabit } = useHabitStore();
-  const { data: todayLogs, isLoading: todayLogsLoading } = useTodayHabitLogs();
+  const { data: todayLogs, isLoading: todayLogsLoading } = useTodayHabitLogsStats();
   const logHabitMutation = useLogHabit();
   const deleteHabitMutation = useDeleteHabit();
   const [isLogging, setIsLogging] = useState(false);

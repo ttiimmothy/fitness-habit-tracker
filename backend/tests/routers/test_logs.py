@@ -201,7 +201,7 @@ class TestLogEndpoints:
                             headers=auth_headers)
     assert response2.status_code == 200
 
-    response = client.get("/api/logs/today", headers=auth_headers)
+    response = client.get("/api/stats/today", headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -231,7 +231,7 @@ class TestLogEndpoints:
 
   def test_today_endpoint_empty_habits(self, client: TestClient, auth_headers: dict):
     """Test today endpoint with no habits"""
-    response = client.get("/api/logs/today", headers=auth_headers)
+    response = client.get("/api/stats/today", headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -239,7 +239,7 @@ class TestLogEndpoints:
 
   def test_today_endpoint_unauthenticated(self, client: TestClient):
     """Test today endpoint without authentication"""
-    response = client.get("/api/logs/today")
+    response = client.get("/api/stats/today")
 
     assert response.status_code == 401
 
@@ -266,7 +266,7 @@ class TestLogEndpoints:
                 json={"quantity": 2},
                 headers=auth_headers)
 
-    response = client.get("/api/logs/today", headers=auth_headers)
+    response = client.get("/api/stats/today", headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -305,7 +305,7 @@ class TestLogEndpoints:
     # API doesn't validate zero quantities, so it should succeed
     assert response.status_code == 200
 
-  def test_list_logs_with_date_filter(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+  def test_list_logs_with_date_filter(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test log listing with date filtering"""
     # Create logs for different dates
     today = date.today()
@@ -317,19 +317,14 @@ class TestLogEndpoints:
                 headers=auth_headers)
 
     # Manually create log for yesterday (bypassing API validation)
-    # Use the test database session from the fixture
-    from tests.conftest import TestingSessionLocal
-    db = TestingSessionLocal()
-    try:
-      yesterday_log = HabitLog(
-          habit_id=test_habit.id,
-          date=yesterday,
-          quantity=1
-      )
-      db.add(yesterday_log)
-      db.commit()
-    finally:
-      db.close()
+    # Use the same database session as the test client
+    yesterday_log = HabitLog(
+        habit_id=test_habit.id,
+        date=yesterday,
+        quantity=1
+    )
+    db_session.add(yesterday_log)
+    db_session.commit()
 
     # Test listing logs for today
     response = client.get(

@@ -13,7 +13,7 @@ from app.db.session import get_db
 from app.models.habit import Habit
 from app.models.habit_log import HabitLog
 from app.models.user import User
-from app.schemas.common import HabitLogCreate, HabitLogOut, DailyLogCount, HabitStats, HabitDailyProgress, TodayHabitLog
+from app.schemas.habit_log import HabitLogCreate, HabitLogOut
 
 
 router = APIRouter()
@@ -74,65 +74,6 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
         "quantity": log.quantity,
         "created_at": log.created_at
     })
-
-
-@router.get("/today", response_model=list[TodayHabitLog])
-def get_today_habits_logs(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-  """Get all user's habits with their today's log status."""
-  today = date.today()
-
-  # Get all habits for the user
-  habits = db.query(Habit).filter(Habit.user_id == current_user.id).all()
-
-  if not habits:
-    return []
-
-  # Get all habit IDs
-  habit_ids = [habit.id for habit in habits]
-
-  # Get today's logs for all habits
-  today_logs = db.query(HabitLog).filter(
-      and_(
-          HabitLog.habit_id.in_(habit_ids),
-          HabitLog.date == today
-      )
-  ).all()
-
-  # Sum quantities per habit for current_progress
-  habit_log_counts = {}
-  for log in today_logs:
-    habit_log_counts[log.habit_id] = habit_log_counts.get(
-        log.habit_id, 0) + log.quantity
-
-  # Get the most recent log for each habit (for log_id and log_created_at)
-  today_logs_dict = {}
-  for log in today_logs:
-    if log.habit_id not in today_logs_dict:
-      today_logs_dict[log.habit_id] = log
-
-  # Build response
-  result = []
-  for habit in habits:
-    current_progress = habit_log_counts.get(habit.id, 0)
-    logged_today = current_progress > 0
-    today_log = today_logs_dict.get(habit.id)
-
-    result.append(TodayHabitLog(
-        habit_id=str(habit.id),
-        title=habit.title,
-        category=habit.category.value,
-        frequency=habit.frequency.value,
-        target=habit.target,
-        logged_today=logged_today,
-        current_progress=current_progress,
-        log_id=str(today_log.id) if today_log else None,
-        log_created_at=today_log.created_at if today_log else None
-    ))
-
-  return result
 
 
 @router.get("/", response_model=list[HabitLogOut])

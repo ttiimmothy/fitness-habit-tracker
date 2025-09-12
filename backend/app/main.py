@@ -6,10 +6,10 @@ from fastapi_limiter import FastAPILimiter
 from app.core.config import settings
 from app.core.rate_limit import init_rate_limiter
 from app.problem_details import install_problem_handlers
-from app.api.routers import auth as auth_router
-from app.api.routers import habits as habits_router
-from app.api.routers import logs as logs_router
-from app.api.routers import stats as stats_router
+from app.routers import auth as auth_router
+from app.routers import habits as habits_router
+from app.routers import logs as logs_router
+from app.routers import stats as stats_router
 
 
 @asynccontextmanager

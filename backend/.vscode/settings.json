@@ -1,0 +1,10 @@
+{"editor.tokenColorCustomizations": {
+  "textMateRules": [
+    {
+      "scope": "string.quoted.docstring.multi.python",
+      "settings": {
+        "foreground": "#6A737D" // dim gray color
+      }
+    }
+  ]
+}}

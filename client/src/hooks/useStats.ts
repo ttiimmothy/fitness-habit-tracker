@@ -78,3 +78,14 @@ export const useMultipleHabitsStats = (habitIds: string[]) => {
     enabled: habitIds.length > 0,
   });
 };
+
+// Fetch today's habit logs stats
+export const useTodayHabitLogsStats = () => {
+  return useQuery({
+    queryKey: ['habits', 'today-logs-stats'],
+    queryFn: async (): Promise<TodayHabitLog[]> => {
+      const response = await api('/stats/logs/today');
+      return response.data;
+    },
+  });
+};

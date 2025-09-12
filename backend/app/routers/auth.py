@@ -8,7 +8,7 @@ from app.core.security import create_access_token, verify_password, hash_passwor
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import LoginRequest, ChangePasswordRequest, RegisterRequest, UploadProfileRequest
-from app.schemas.common import UserOut
+from app.schemas.user import UserOut
 
 
 router = APIRouter()
