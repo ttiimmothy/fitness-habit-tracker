@@ -15,5 +15,3 @@ seed:
 
 db-upgrade:
 	alembic upgrade head
-
-
