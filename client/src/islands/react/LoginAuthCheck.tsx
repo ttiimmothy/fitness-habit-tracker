@@ -19,8 +19,10 @@ export const LoginAuthCheck = ({ children }: {
         // Try to get current user from API
         const response = await api('/auth/me');
         const userData = response.data;
-        setAuth(userData.user);
-        window.location.href = '/';
+        if(userData.user) {
+          setAuth(userData.user);
+          window.location.href = '/';
+        }
       } catch (error) {
         console.error('Authentication check failed:', error);
       }

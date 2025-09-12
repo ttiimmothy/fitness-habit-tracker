@@ -24,17 +24,17 @@ export const authStoreCreate: StateCreator<AuthState, [], [], AuthState> = (set,
 })
 
 export const useAuthStore = create<AuthState>()(
-  persist(
+  // persist(
     devtools(
       authStoreCreate,
       {name: "AuthStore"}
     ),
-    { 
-      name: 'authStore-storage',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state: AuthState):Partial<AuthState> => ({
-        user: state.user
-      })
-    },
-  ),
+  //   { 
+  //     name: 'authStore-storage',
+  //     storage: createJSONStorage(() => localStorage),
+  //     partialize: (state: AuthState):Partial<AuthState> => ({
+  //       user: state.user
+  //     })
+  //   },
+  // ),
 );
