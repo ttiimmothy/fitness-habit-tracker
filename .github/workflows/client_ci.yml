@@ -2,6 +2,8 @@ name: Client ci
 on:
   pull_request:
     branches: [ main, production ]
+  workflow_dispatch:
+    
 jobs:
   build:
     name: client-build
