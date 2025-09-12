@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import String, DateTime
 from sqlalchemy.dialects.postgresql import UUID
@@ -19,7 +19,7 @@ class User(Base):
   name: Mapped[str | None] = mapped_column(String(255), nullable=True)
   avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
   created_at: Mapped[datetime] = mapped_column(
-      DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+      DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
   habits = relationship("Habit", back_populates="user",
                         cascade="all, delete-orphan")

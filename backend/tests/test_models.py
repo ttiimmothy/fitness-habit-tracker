@@ -1,6 +1,7 @@
 import pytest
 from datetime import date, datetime, timedelta
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
 from app.models.habit import Habit, Category, Frequency
@@ -316,7 +317,7 @@ class TestHabitLogModel:
     )
     db_session.add(log2)
 
-    with pytest.raises(Exception):  # Should raise integrity error
+    with pytest.raises(IntegrityError):  # Should raise integrity error
       db_session.commit()
 
   def test_habit_log_different_dates(self, db_session: Session, test_user: User, test_habit: Habit):

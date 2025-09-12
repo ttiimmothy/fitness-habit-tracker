@@ -1,5 +1,5 @@
 import uuid
-from datetime import date as dt_date, datetime, timezone
+from datetime import date as dt_date, datetime, timezone, UTC
 
 from sqlalchemy import Date, DateTime, ForeignKey, UniqueConstraint, Integer
 from sqlalchemy.dialects.postgresql import UUID
@@ -21,6 +21,6 @@ class HabitLog(Base):
   date: Mapped[dt_date] = mapped_column(Date, nullable=False)
   quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
   created_at: Mapped[datetime] = mapped_column(
-      DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+      DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
   habit = relationship("Habit", back_populates="logs")

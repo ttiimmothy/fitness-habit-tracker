@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from sqlalchemy import String, DateTime, Enum, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
@@ -41,7 +41,7 @@ class Habit(Base):
       Enum(Category), nullable=False, default=Category.other)
   description: Mapped[str | None] = mapped_column(String(512), nullable=True)
   created_at: Mapped[datetime] = mapped_column(
-      DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+      DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
   user = relationship("User", back_populates="habits")
   logs = relationship("HabitLog", back_populates="habit",
