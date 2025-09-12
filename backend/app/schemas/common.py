@@ -29,15 +29,15 @@ class HabitOut(BaseModel):
 class HabitCreate(BaseModel):
   title: str
   frequency: str
-  target: int
+  target: int = Field(gt=0, description="Target must be positive")
   category: str = "other"
-  description: str | None
+  description: str | None = None
 
 
 class HabitUpdate(BaseModel):
   title: str | None = None
   frequency: str | None = None
-  target: int | None = None
+  target: int | None = Field(None, gt=0, description="Target must be positive")
   category: str | None = None
   description: str | None = None
 

@@ -4,6 +4,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_limiter.depends import RateLimiter
+from app.core.config import settings
 from sqlalchemy import func, and_, desc
 from sqlalchemy.orm import Session
 
@@ -18,7 +19,7 @@ from app.schemas.common import HabitLogCreate, HabitLogOut, DailyLogCount, Habit
 router = APIRouter()
 
 
-@router.post("/{habit_id}/log", response_model=HabitLogOut, dependencies=[Depends(RateLimiter(times=60, seconds=3600))])
+@router.post("/{habit_id}/log", response_model=HabitLogOut)
 def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
   habit = db.query(Habit).filter(Habit.id == UUID(
       habit_id), Habit.user_id == current_user.id).first()
@@ -73,21 +74,6 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
         "quantity": log.quantity,
         "created_at": log.created_at
     })
-
-
-# @router.get("/{habit_id}/logs", response_model=list[HabitLogOut])
-# def list_logs(habit_id: str, range: Literal["week", "month"] | None = Query(default=None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-#   habit = db.query(Habit).filter(Habit.id == UUID(
-#       habit_id), Habit.user_id == current_user.id).first()
-
-#   if not habit:
-#     raise HTTPException(status_code=404, detail="Habit not found")
-
-#   q = db.query(HabitLog).filter(HabitLog.habit_id ==
-#                                 habit.id).order_by(HabitLog.date.desc())
-#   logs = q.all()
-
-#   return [HabitLogOut(**{"id": str(l.id), "habit_id": str(l.habit_id), "date": l.date, "quantity": l.quantity, "created_at": l.created_at}) for l in logs]
 
 
 @router.get("/today", response_model=list[TodayHabitLog])
@@ -147,3 +133,22 @@ def get_today_habits_logs(
     ))
 
   return result
+
+
+@router.get("/", response_model=list[HabitLogOut])
+def list_logs(habit_id: str = Query(..., description="Habit ID"), date: date | None = Query(default=None, description="Filter by date"), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+  habit = db.query(Habit).filter(Habit.id == UUID(
+      habit_id), Habit.user_id == current_user.id).first()
+
+  if not habit:
+    raise HTTPException(status_code=404, detail="Habit not found")
+
+  q = db.query(HabitLog).filter(HabitLog.habit_id == habit.id)
+
+  if date:
+    q = q.filter(HabitLog.date == date)
+
+  q = q.order_by(HabitLog.date.desc())
+  logs = q.all()
+
+  return [HabitLogOut(**{"id": str(l.id), "habit_id": str(l.habit_id), "date": l.date, "quantity": l.quantity, "created_at": l.created_at}) for l in logs]

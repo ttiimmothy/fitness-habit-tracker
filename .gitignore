@@ -3,6 +3,7 @@ node_modules/
 .pnpm-store/
 dist/
 .astro/
+.DS_Store
 
 # Python
 __pycache__/
@@ -20,3 +21,5 @@ client/.env
 **/instructions/*
 spec.txt
 nginx*
+client/**/README.md
+backend/**/README.md
