@@ -34,13 +34,14 @@ A full-stack application for tracking fitness habits and building healthy routin
 - **Redis** for rate limiting and caching
 - **JWT** authentication with python-jose
 - **Pydantic** for data validation and settings
-- **Poetry** for dependency management
+- **uv** for dependency management
 - **Pytest** for testing
 
 ### Prerequisites
 - Docker and Docker Compose
 - Python 3.11+
 - Node.js 18+
+- uv (Python package manager)
 - Git
 
 ### 1. Clone the repository
@@ -61,10 +62,10 @@ docker compose up --build
 cd backend
 cp .env.example .env
 # Edit .env with your database URL and JWT secret
-poetry install
-poetry run alembic revision --autogenerate -m "init schema"
-poetry run alembic upgrade head
-poetry run python seed.py
+uv sync
+uv run alembic revision --autogenerate -m "init schema"
+uv run alembic upgrade head
+uv run python seed.py
 ```
 
 #### 3. Set up the frontend
@@ -158,22 +159,22 @@ fitness_habit_tracker/
 ```bash
 # Backend tests
 cd backend
-poetry run pytest
+uv run pytest
 
 # Frontend tests
 cd client
 npm test
 
 # All tests
-docker compose exec backend poetry run pytest
+docker compose exec backend uv run pytest
 ```
 
 ### Linting and Formatting
 ```bash
 # Backend linting and formatting
 cd backend
-poetry run ruff check .
-poetry run black .
+uv run ruff check .
+uv run black .
 
 # Frontend linting
 cd client
@@ -184,17 +185,17 @@ npm run lint
 ```bash
 # Create migration
 cd backend
-poetry run alembic revision --autogenerate -m "description"
+uv run alembic revision --autogenerate -m "description"
 
 # Apply migrations
-poetry run alembic upgrade head
+uv run alembic upgrade head
 
 # Reset database
-poetry run alembic downgrade base
-poetry run alembic upgrade head
+uv run alembic downgrade base
+uv run alembic upgrade head
 
 # Seed database
-poetry run python seed.py
+uv run python seed.py
 ```
 
 ## Docker Deployment

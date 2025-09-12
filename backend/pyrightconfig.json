@@ -1,5 +1,5 @@
 {
-  "venvPath": "/Users/timoptimothy/Library/Caches/pypoetry/virtualenvs",
-  "venv": "fitness-habit-tracker-backend-UPkAkj8N-py3.13",
+  "venvPath": ".",
+  "venv": ".venv",
   "pythonVersion": "3.13"
 }

@@ -10,8 +10,6 @@ from app.api.routers import auth as auth_router
 from app.api.routers import habits as habits_router
 from app.api.routers import logs as logs_router
 from app.api.routers import stats as stats_router
-from app.db.base import Base
-import app.db.base_model_imports
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
