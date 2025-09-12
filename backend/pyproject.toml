@@ -33,15 +33,25 @@ dev = [
   "coverage>=7.5.3,<8.0.0",
 ]
 
-# Formatter/linter config (unchanged)
-[tool.black]
-line-length = 180
-target-version = ["py311"]
-
 [tool.ruff]
-line-length = 180
-select = ["E", "F", "I", "UP", "B"]
-ignore = []
+# keep the same families you were checking, but then ignore specifics below
+lint.select = ["E", "F", "I", "UP", "B"]
+lint.ignore = [
+  # what you asked to ignore
+  "F401",   # unused import
+  "I001",   # imports not sorted
+  "UP035",  # import from collections.abc
+  "UP007",  # use X | Y
+  "UP045",  # use X | None
+  "E501",   # line too long
+  "B904",   # raise ... from err
+  "B008",   # function call in default (FastAPI Depends pattern)
+  "F841",   # assigned but never used
+  "E741",   # ambiguous var name
+]
+
+# completely ignore migrations
+exclude = ["alembic/migrations/"]
 
 # Build backend:
 # If you don't plan to publish a wheel, this is fine as-is.

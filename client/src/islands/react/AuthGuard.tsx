@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { api } from '../../lib/api';
 

@@ -1,5 +1,4 @@
 import {useAuthStore} from "../../store/authStore";
-import React from "react"
 
 export const DashboardHeader = () => {
   const { user } = useAuthStore();
