@@ -1,9 +1,10 @@
 name: Backend ci
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, production ]
 jobs:
   build:
+    name: server-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
