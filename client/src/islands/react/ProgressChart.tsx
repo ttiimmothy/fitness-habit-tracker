@@ -1,4 +1,3 @@
-import React from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useHabits, HabitDailyProgress } from '../../hooks/useHabits';
 import {useMultipleHabitsDailyProgress} from "../../hooks/useStats";

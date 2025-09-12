@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useHabitStore } from '../../store/habitStore';
 import { useLogHabit, useTodayHabitLogs } from '../../hooks/useHabitLog';
 import { useDeleteHabit } from '../../hooks/useHabits';

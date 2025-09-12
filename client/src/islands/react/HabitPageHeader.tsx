@@ -1,4 +1,3 @@
-import React from 'react';
 import { useHabitStore } from '../../store/habitStore';
 
 export default function HabitPageHeader() {

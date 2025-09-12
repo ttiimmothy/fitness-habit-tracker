@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useHabits, useDeleteHabit } from '../../hooks/useHabits';
 import { useHabitStore } from '../../store/habitStore';
 import AddHabitButton from './AddHabitButton';
