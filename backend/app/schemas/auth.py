@@ -25,3 +25,7 @@ class RegisterRequest(BaseModel):
   name: str
   email: EmailStr
   password: str
+  
+  
+class UploadProfileRequest(BaseModel):
+  name: str

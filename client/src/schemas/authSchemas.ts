@@ -36,6 +36,17 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// Username update validation schema
+export const updateUsernameSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
+});
+
 // Type inference from schemas
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type UpdateUsernameFormData = z.infer<typeof updateUsernameSchema>;

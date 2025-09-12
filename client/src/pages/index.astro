@@ -4,11 +4,11 @@ import {HabitCardIsland} from "../islands/HabitCardIsland";
 import {StreakCounterIsland} from "../islands/StreakCounterIsland";
 import {ProgressChartIsland} from "../islands/ProgressChartIsland";
 import {DashboardHeader} from "../islands/react/DashboardHeader"
-import {AuthGuardIsland} from "../islands/AuthGuardIsland";
+import {AuthGuard} from "../islands/react/AuthGuard";
 import Layout from "../layouts/Layout.astro";
 ---
 <Layout>
-<AuthGuardIsland client:load>
+<AuthGuard client:load>
   <main class="max-w-5xl mx-auto p-6 space-y-6">
     <header>
       <DashboardHeader client:load/>
@@ -22,5 +22,5 @@ import Layout from "../layouts/Layout.astro";
       <HabitCardIsland client:load />
     </section>
   </main>
-</AuthGuardIsland>
+</AuthGuard>
 </Layout>

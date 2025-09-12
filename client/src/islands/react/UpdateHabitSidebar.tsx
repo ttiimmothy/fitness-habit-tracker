@@ -73,8 +73,7 @@ const UpdateHabitSidebar = ({ habit, isOpen, onClose }: UpdateHabitSidebarProps)
             <div className="p-6">
               <UpdateHabitForm 
                 habit={habit} 
-                onSuccess={onClose} 
-                onCancel={onClose} 
+                onSuccess={onClose}
               />
             </div>
           </div>

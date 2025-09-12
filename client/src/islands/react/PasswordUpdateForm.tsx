@@ -55,9 +55,7 @@ export default function PasswordUpdateForm({ onSuccess }: PasswordUpdateFormProp
       
       // Call onSuccess callback if provided
       if (onSuccess) {
-        setTimeout(() => {
-          onSuccess();
-        }, 1000); // Close sidebar after 1 second
+        onSuccess();
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message || 'Failed to update password');
@@ -67,9 +65,9 @@ export default function PasswordUpdateForm({ onSuccess }: PasswordUpdateFormProp
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-600 rounded-lg">
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Update Password</h2>
+        {/* <h2 className="text-lg font-medium text-gray-900 dark:text-white">Update Password</h2> */}
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
           Change your account password to keep your account secure
         </p>

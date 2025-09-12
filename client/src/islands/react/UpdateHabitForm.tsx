@@ -16,7 +16,6 @@ interface UpdateHabitFormProps {
     color?: string;
   };
   onSuccess?: () => void;
-  onCancel?: () => void;
 }
 
 const frequencyOptions = [
@@ -47,7 +46,7 @@ const categoryOptions = [
   { value: 'other', label: 'Other' },
 ];
 
-export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHabitFormProps) {
+export default function UpdateHabitForm({ habit, onSuccess }: UpdateHabitFormProps) {
   const updateHabitMutation = useUpdateHabit();
   
   const {
@@ -103,7 +102,7 @@ export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHa
             <input
               {...register('title')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
               placeholder="Enter habit title"
             />
             {errors.title && (
@@ -121,7 +120,7 @@ export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHa
             <textarea
               {...register('description')}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
               placeholder="Enter habit description (optional)"
             />
             {errors.description && (
@@ -138,7 +137,7 @@ export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHa
             </label>
             <select
               {...register('category')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
             >
               {categoryOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -160,7 +159,7 @@ export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHa
             </label>
             <select
               {...register('frequency')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
             >
               {frequencyOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -184,7 +183,7 @@ export default function UpdateHabitForm({ habit, onSuccess, onCancel }: UpdateHa
               {...register('target', { valueAsNumber: true })}
               type="number"
               min="1"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
               placeholder="Enter target number"
             />
             {errors.target && (

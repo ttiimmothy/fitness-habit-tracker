@@ -1,11 +1,11 @@
 ---
 import "../styles/global.css";
 import Layout from "../layouts/Layout.astro";
-import {AuthGuardIsland} from "../islands/AuthGuardIsland";
+import {AuthGuard} from "../islands/react/AuthGuard";
 ---
 
 <Layout>
-<AuthGuardIsland client:load>
+<AuthGuard client:load>
 <main class="max-w-5xl mx-auto p-6 space-y-8">
   <div class="text-center mb-8">
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Achievement Badges</h1>
@@ -349,15 +349,6 @@ import {AuthGuardIsland} from "../islands/AuthGuardIsland";
     </div>
   </div>
 
-  <!-- Back to Dashboard -->
-  <!-- <div class="text-center">
-    <a href="/" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-      </svg>
-      Back to Dashboard
-    </a>
-  </div> -->
 </main>
-</AuthGuardIsland>
+</AuthGuard>
 </Layout>

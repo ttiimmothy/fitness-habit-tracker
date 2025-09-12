@@ -1,28 +1,269 @@
 # Fitness & Habit Tracker
 
-Monorepo with FastAPI backend and Astro client.
+A full-stack application for tracking fitness habits and building healthy routines. Built with Astro, React, FastAPI, and PostgreSQL.
 
-## Quickstart
+## Features
 
-1. Copy envs
-   - backend: create `.env` from `.env.example`
-   - client: create `.env` with `PUBLIC_VITE_API_URL=http://localhost:8000`
-2. Start dev stack
+- 🏃 **Habit Management**: Create and manage daily/weekly fitness habits
+- 📊 **Progress Tracking**: Visualize your progress with interactive charts
+- 🔥 **Streak Counter**: Track current and longest streaks for motivation
+- 🏆 **Achievement Badges**: Unlock badges for milestones and consistency
+- 📈 **Analytics Dashboard**: View detailed statistics and progress over time
+- 🌙 **Dark Mode**: Toggle between light and dark themes
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile
+- 🔐 **Secure Authentication**: JWT-based authentication with password hashing
+- ⚡ **Real-time Updates**: Fast and responsive user interface
+
+## Tech Stack
+
+### Frontend
+- **Astro 5** with TypeScript
+- **React 18** for interactive components
+- **Tailwind CSS** for styling
+- **Zustand** for state management
+- **React Query** for data fetching and caching
+- **Recharts** for data visualization
+- **React Hook Form** with Zod validation
+- **Lucide React** for icons
+- **Day.js** for date manipulation
+
+### Backend
+- **FastAPI** with Python 3.11
+- **SQLAlchemy 2.0** with Alembic for database management
+- **PostgreSQL** database
+- **Redis** for rate limiting and caching
+- **JWT** authentication with python-jose
+- **Pydantic** for data validation and settings
+- **Poetry** for dependency management
+- **Pytest** for testing
+
+### Prerequisites
+- Docker and Docker Compose
+- Python 3.11+
+- Node.js 18+
+- Git
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/fitness_habit_tracker
+cd fitness_habit_tracker
+```
+
+### 2. For development
+
+#### 1. Start the database and services
 ```bash
 docker compose up --build
+```
+
+#### 2. Set up the backend
+```bash
+cd backend
+cp .env.example .env
+# Edit .env with your database URL and JWT secret
+poetry install
 poetry run alembic revision --autogenerate -m "init schema"
 poetry run alembic upgrade head
+poetry run python seed.py
 ```
-3. Seed demo data
+
+#### 3. Set up the frontend
 ```bash
-docker compose exec backend poetry run python seed.py
+cd client
+cp .env.example .env
+# Edit .env with your API URL
+npm install
+npm run dev
 ```
-4. Open client at http://localhost:4321
 
-## API
+#### 4. Access the application
+- Frontend: http://localhost:4321
+- Backend API: http://localhost:8000
+- Database: localhost:5432
+- Redis: localhost:6379
 
-- POST /auth/login { email, password } → { accessToken, user }
-- GET /auth/me → { user }
-- GET /habits, POST /habits, PUT /habits, DELETE /habits
-- POST /habits/logs/:id/log, GET /habits/logs/today
-- GET /stats/{habit_id}/stats/streak, /stats/{habit_id}/daily-progress
+## Demo Credentials
+
+The application comes with seeded demo data. You can log in with:
+- **Email**: demo@example.com
+- **Password**: Demo123!
+
+## Project Structure
+
+```
+fitness_habit_tracker/
+├── client/                     # Astro frontend application
+│   ├── src/
+│   │   ├── components/         # Astro components
+│   │   ├── islands/            # React interactive components
+│   │   │   └── react/          # React components
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── lib/                # API client and utilities
+│   │   ├── pages/              # Astro pages
+│   │   ├── schemas/            # Zod validation schemas
+│   │   ├── store/              # Zustand stores
+│   │   └── styles/             # Global CSS
+│   ├── package.json
+│   ├── astro.config.mjs
+│   └── tailwind.config.js
+├── backend/                    # FastAPI backend application
+│   ├── app/
+│   │   ├── api/                # API routes and dependencies
+│   │   │   └── routers/        # Route handlers
+│   │   ├── core/               # Core configuration
+│   │   ├── db/                 # Database configuration
+│   │   ├── models/             # SQLAlchemy models
+│   │   ├── schemas/            # Pydantic schemas
+│   │   ├── services/           # Business logic
+│   │   ├── main.py             # FastAPI app
+│   │   └── wsgi.py             # WSGI entry point
+│   ├── alembic/                # Database migrations
+│   ├── tests/                  # Backend tests
+│   ├── pyproject.toml
+│   ├── requirements.txt
+│   └── seed.py                 # Demo data seeding
+├── docker-compose.yml          # Development services
+├── LICENSE
+├── README.md
+└── spec.txt
+```
+
+## API Endpoints
+
+### Authentication
+- `POST /auth/login` - User login
+- `GET /auth/me` - Get current user
+- `POST /auth/register` - User registration (if implemented)
+
+### Habits
+- `GET /habits` - Get user's habits
+- `POST /habits` - Create new habit
+- `GET /habits/{id}` - Get habit details
+- `PUT /habits/{id}` - Update habit
+- `DELETE /habits/{id}` - Delete habit
+
+### Habit Logs
+- `POST /habits/{id}/log` - Log habit completion
+- `GET /habits/{id}/logs` - Get habit logs
+- `GET /habits/logs/today` - Get today's logs
+
+### Statistics
+- `GET /stats/overview` - Get overview statistics
+- `GET /stats/{habit_id}/streak` - Get habit streak data
+- `GET /stats/{habit_id}/daily-progress` - Get daily progress data
+
+## Development
+
+### Running Tests
+```bash
+# Backend tests
+cd backend
+poetry run pytest
+
+# Frontend tests
+cd client
+npm test
+
+# All tests
+docker compose exec backend poetry run pytest
+```
+
+### Linting and Formatting
+```bash
+# Backend linting and formatting
+cd backend
+poetry run ruff check .
+poetry run black .
+
+# Frontend linting
+cd client
+npm run lint
+```
+
+### Database Management
+```bash
+# Create migration
+cd backend
+poetry run alembic revision --autogenerate -m "description"
+
+# Apply migrations
+poetry run alembic upgrade head
+
+# Reset database
+poetry run alembic downgrade base
+poetry run alembic upgrade head
+
+# Seed database
+poetry run python seed.py
+```
+
+## Docker Deployment
+
+### Build and run with Docker Compose
+```bash
+# Build all services
+docker compose build
+
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+### Individual Docker builds
+```bash
+# Backend
+cd backend
+docker build -t fitness-tracker-backend .
+
+# Frontend
+cd client
+docker build -t fitness-tracker-frontend .
+```
+
+## Environment Variables
+
+### Backend (.env)
+```env
+ENV=dev
+PORT=8000
+DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/fitness
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_ALG=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+CLIENT_URL=http://localhost:4321
+REDIS_URL=redis://redis:6379/0
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
+```
+
+### Frontend (.env)
+```env
+PUBLIC_VITE_API_URL=http://localhost:8000
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with modern web technologies
+- Inspired by popular habit tracking apps
+- Designed for simplicity and ease of use
+- Focus on building sustainable fitness habits

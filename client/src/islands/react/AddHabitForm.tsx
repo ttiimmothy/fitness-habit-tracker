@@ -73,9 +73,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
       reset();
       
       if (onSuccess) {
-        setTimeout(() => {
-          onSuccess();
-        }, 1000);
+        onSuccess();
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message || 'Failed to create habit');
@@ -94,7 +92,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
           <input
             {...register('title')}
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
             placeholder="e.g., Drink 8 glasses of water"
           />
           {errors.title && (
@@ -110,7 +108,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
           <textarea
             {...register('description')}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
             placeholder="Optional description of your habit..."
           />
           {errors.description && (
@@ -125,7 +123,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
           </label>
           <select
             {...register('category')}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
           >
             {categoryOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -146,7 +144,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
             </label>
             <select
               {...register('frequency')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
             >
               {frequencyOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -168,7 +166,7 @@ export default function AddHabitForm({ onSuccess, onCancel }: AddHabitFormProps)
               type="number"
               min="1"
               max="100"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-200 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
             />
             {errors.target && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.target.message}</p>

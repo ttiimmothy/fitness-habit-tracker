@@ -4,12 +4,14 @@ import { useLogout } from '../../hooks/useAuth';
 import { useHabits } from '../../hooks/useHabits';
 import { useMultipleHabitsStats } from '../../hooks/useStats';
 import PasswordUpdateForm from './PasswordUpdateForm';
+import UpdateUsernameSidebar from './UpdateUsernameSidebar';
 
 export default function UserProfile() {
   const { user } = useAuthStore();
   const logoutMutation = useLogout();
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPasswordSidebarOpen, setIsPasswordSidebarOpen] = useState(false);
+  const [isUsernameSidebarOpen, setIsUsernameSidebarOpen] = useState(false);
   
   // Fetch habits and stats data
   const { data: habits, isLoading: habitsLoading } = useHabits();
@@ -31,12 +33,13 @@ export default function UserProfile() {
   // Handle ESC key to close sidebar
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isPasswordSidebarOpen) {
-        closePasswordSidebar();
+      if (event.key === 'Escape' && (isPasswordSidebarOpen || isUsernameSidebarOpen)) {
+        if (isPasswordSidebarOpen) closePasswordSidebar();
+        if (isUsernameSidebarOpen) closeUsernameSidebar();
       }
     };
 
-    if (isPasswordSidebarOpen) {
+    if (isPasswordSidebarOpen || isUsernameSidebarOpen) {
       document.addEventListener('keydown', handleEscKey);
       // Prevent body scroll when sidebar is open
       document.body.style.overflow = 'hidden';
@@ -46,22 +49,17 @@ export default function UserProfile() {
       document.removeEventListener('keydown', handleEscKey);
       document.body.style.overflow = 'unset';
     };
-  }, [isPasswordSidebarOpen]);
+  }, [isPasswordSidebarOpen, isUsernameSidebarOpen]);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         // The mutation already handles setUser(null) via setAuth(null)
-        // Add a small delay to ensure state cleanup completes
-        // setTimeout(() => {
-          window.location.href = '/login';
-        // }, 100);
+        window.location.href = '/login';
       },
       onError: () => {
         // The mutation already handles setUser(null) via setAuth(null)
-        // setTimeout(() => {
-          window.location.href = '/login';
-        // }, 100);
+        window.location.href = '/login';
       },
     });
   };
@@ -74,9 +72,18 @@ export default function UserProfile() {
     setIsPasswordSidebarOpen(false);
   };
 
+  const openUsernameSidebar = () => {
+    setIsUsernameSidebarOpen(true);
+  };
+
+  const closeUsernameSidebar = () => {
+    setIsUsernameSidebarOpen(false);
+  };
+
   // Close sidebar when clicking outside
   const handleBackdropClick = (e: React.MouseEvent) => {
-    closePasswordSidebar();
+    if (isPasswordSidebarOpen) closePasswordSidebar();
+    if (isUsernameSidebarOpen) closeUsernameSidebar();
   };
 
   if (!isLoaded) {
@@ -153,11 +160,16 @@ export default function UserProfile() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Full Name
+                      Username
                     </label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                      {user.name || 'Not provided'}
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
+                      {user.name || 'Not set'}
                     </p>
+                    {!user.name && (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                        Click "Change Username" to set your display name
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -167,14 +179,7 @@ export default function UserProfile() {
                       {user.email}
                     </p>
                   </div>
-                  {/* <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      User ID
-                    </label>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                      {user.id}
-                    </p>
-                  </div> */}
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Member Since
@@ -218,10 +223,6 @@ export default function UserProfile() {
           </div>
         </div>
 
-      </div>
-
-
-
         {/* Account Actions Card */}
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -229,6 +230,16 @@ export default function UserProfile() {
           </div>
           <div className="px-6 py-4">
             <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={openUsernameSidebar}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Change Username
+              </button>
+              
               <button
                 onClick={openPasswordSidebar}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -264,6 +275,15 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
+
+      </div>
+
+      {/* Username Update Sidebar */}
+      <UpdateUsernameSidebar 
+        isOpen={isUsernameSidebarOpen}
+        onClose={closeUsernameSidebar}
+        currentName={user?.name || ''}
+      />
 
       {/* Password Update Sidebar Overlay */}
       {isPasswordSidebarOpen && (

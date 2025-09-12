@@ -2,11 +2,9 @@ import React, { useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { api } from '../../lib/api';
 
-interface AuthGuardProps {
+export const AuthGuard = ({ children }: {
   children: React.ReactNode;
-}
-
-export default function AuthGuard({ children }: AuthGuardProps) {
+}) => {
   const { user, setAuth } = useAuthStore();
 
   useEffect(() => {

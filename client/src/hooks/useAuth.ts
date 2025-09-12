@@ -14,6 +14,10 @@ interface RegisterData {
   password: string;
 }
 
+interface UpdateProfileData {
+  name: string;
+}
+
 interface AuthResponse {
   accessToken: string;
   user: User;
@@ -105,6 +109,30 @@ export function useLogout() {
       // Clear user state even if API call fails
       setAuth(null);
       queryClient.clear();
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const {user, setAuth} = useAuthStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: UpdateProfileData) => {
+      const response = await api.put('/auth/update-profile', data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Update the user in the store with the new name
+      const newUser = {...user as User, name: data.name}
+      setAuth(newUser)
+      // setAuth((prev: User) => prev ? {...prev, name:data.name} : null)
+      // const currentUser = useAuthStore.getState().user;
+      // if (currentUser) {
+      //   setAuth({ ...currentUser, name: data.name });
+      // }
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: authKeys.user() });
     },
   });
 }

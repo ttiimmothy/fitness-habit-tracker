@@ -7,7 +7,7 @@ from app.core.security import create_access_token, verify_password, hash_passwor
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.auth import LoginRequest, ChangePasswordRequest, RegisterRequest
+from app.schemas.auth import LoginRequest, ChangePasswordRequest, RegisterRequest, UploadProfileRequest
 from app.schemas.common import UserOut
 
 
@@ -127,4 +127,19 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
           "avatar_url": new_user.avatar_url,
           "created_at": new_user.created_at,
       })
+  }
+
+
+@router.put("/update-profile")
+def update_profile(payload: UploadProfileRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+  user = db.query(User).filter(User.id == current_user.id).first()
+
+  if not user:
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No this user")
+  
+  user.name = payload.name
+  db.commit()
+  db.refresh(user)
+  return {
+    "name": user.name
   }
