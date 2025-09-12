@@ -2,17 +2,6 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {HabitDailyProgress, TodayHabitLog} from "./useHabits";
 import {api} from "../lib/api";
 
-// Fetch today's habit logs
-export const useTodayHabitLogs = () => {
-  return useQuery({
-    queryKey: ['habits', 'today-logs'],
-    queryFn: async (): Promise<TodayHabitLog[]> => {
-      const response = await api('/habits/logs/today');
-      return response.data;
-    },
-  });
-};
-
 // Log habit completion
 export const useLogHabit = () => {
   const queryClient = useQueryClient();
@@ -29,7 +18,7 @@ export const useLogHabit = () => {
       queryClient.invalidateQueries({ queryKey: ['habits', id, 'daily-progress'] });
       queryClient.invalidateQueries({ queryKey: ['habits', 'multiple-daily-progress'] });
       queryClient.invalidateQueries({ queryKey: ['habits', id, 'stats'] });
-      queryClient.invalidateQueries({ queryKey: ['habits', 'today-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['habits', 'today-logs-stats'] });
     },
   });
 };

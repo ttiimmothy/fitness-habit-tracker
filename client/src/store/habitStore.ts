@@ -15,17 +15,17 @@ export const habitStoreCreate: StateCreator<HabitState, [], [], HabitState> = (s
 });
 
 export const useHabitStore = create<HabitState>()(
-  // persist(
+  persist(
     devtools(
       habitStoreCreate,
       { name: "HabitStore" }
     ),
-  //   {
-  //     name: 'habitStore-storage',
-  //     storage: createJSONStorage(() => localStorage),
-  //     partialize: (state: HabitState): Partial<HabitState> => ({
-  //       selectedHabit: state.selectedHabit
-  //     })
-  //   },
-  // ),
+    {
+      name: 'habitStore-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state: HabitState): Partial<HabitState> => ({
+        selectedHabit: state.selectedHabit
+      })
+    },
+  ),
 );

@@ -12,7 +12,11 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.habit import Habit, Category, Frequency
 from app.models.habit_log import HabitLog
+from app.models.badge import Badge
 from app.core.security import hash_password
+
+# Import all models to ensure they're registered with Base
+import app.models  # noqa
 
 
 # Test database URL - using in-memory SQLite for fast tests

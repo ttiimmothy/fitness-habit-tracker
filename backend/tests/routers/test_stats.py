@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.models.habit_log import HabitLog
 from app.models.habit import Habit
 from app.models.user import User
-from tests.conftest import TestingSessionLocal
 
 
 class TestStatsEndpoints:
@@ -50,23 +49,19 @@ class TestStatsEndpoints:
 
     assert response.status_code == 401
 
-  def test_habit_streak_stats_success(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+  def test_habit_streak_stats_success(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak statistics"""
     # Create logs for consecutive days
     today = date.today()
-    db = TestingSessionLocal()
-    try:
-      for i in range(5):
-        log_date = today - timedelta(days=i)
-        log = HabitLog(
-            habit_id=test_habit.id,
-            date=log_date,
-            quantity=1
-        )
-        db.add(log)
-      db.commit()
-    finally:
-      db.close()
+    for i in range(5):
+      log_date = today - timedelta(days=i)
+      log = HabitLog(
+          habit_id=test_habit.id,
+          date=log_date,
+          quantity=1
+      )
+      db_session.add(log)
+    db_session.commit()
 
     response = client.get(
         f"/api/stats/{test_habit.id}/stats/streak", headers=auth_headers)
@@ -77,25 +72,21 @@ class TestStatsEndpoints:
     assert data["current_streak"] == 5
     assert data["longest_streak"] == 5
 
-  def test_habit_streak_stats_broken_streak(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+  def test_habit_streak_stats_broken_streak(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak with broken streak"""
     # Create logs with a gap
     today = date.today()
     dates = [today, today - timedelta(days=1), today -
              timedelta(days=3), today - timedelta(days=4)]
 
-    db = TestingSessionLocal()
-    try:
-      for log_date in dates:
-        log = HabitLog(
-            habit_id=test_habit.id,
-            date=log_date,
-            quantity=1
-        )
-        db.add(log)
-      db.commit()
-    finally:
-      db.close()
+    for log_date in dates:
+      log = HabitLog(
+          habit_id=test_habit.id,
+          date=log_date,
+          quantity=1
+      )
+      db_session.add(log)
+    db_session.commit()
 
     response = client.get(
         f"/api/stats/{test_habit.id}/stats/streak", headers=auth_headers)
@@ -105,23 +96,19 @@ class TestStatsEndpoints:
     assert data["current_streak"] == 2  # Only last 2 days
     assert data["longest_streak"] == 2  # Longest consecutive is 2
 
-  def test_habit_streak_stats_insufficient_quantity(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+  def test_habit_streak_stats_insufficient_quantity(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak with insufficient quantity (less than target)"""
     # Create logs with quantity less than target
     today = date.today()
-    db = TestingSessionLocal()
-    try:
-      for i in range(3):
-        log_date = today - timedelta(days=i)
-        log = HabitLog(
-            habit_id=test_habit.id,
-            date=log_date,
-            quantity=0  # Less than target of 1
-        )
-        db.add(log)
-      db.commit()
-    finally:
-      db.close()
+    for i in range(3):
+      log_date = today - timedelta(days=i)
+      log = HabitLog(
+          habit_id=test_habit.id,
+          date=log_date,
+          quantity=0  # Less than target of 1
+      )
+      db_session.add(log)
+    db_session.commit()
 
     response = client.get(
         f"/api/stats/{test_habit.id}/stats/streak", headers=auth_headers)
@@ -160,23 +147,19 @@ class TestStatsEndpoints:
     error_data = response.json()
     assert "Habit not found" in error_data["title"]
 
-  def test_habit_daily_progress_success(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+  def test_habit_daily_progress_success(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit daily progress endpoint"""
     # Create logs for different days
     today = date.today()
-    db = TestingSessionLocal()
-    try:
-      for i in range(7):
-        log_date = today - timedelta(days=i)
-        log = HabitLog(
-            habit_id=test_habit.id,
-            date=log_date,
-            quantity=1 if i % 2 == 0 else 0  # Every other day
-        )
-        db.add(log)
-      db.commit()
-    finally:
-      db.close()
+    for i in range(7):
+      log_date = today - timedelta(days=i)
+      log = HabitLog(
+          habit_id=test_habit.id,
+          date=log_date,
+          quantity=1 if i % 2 == 0 else 0  # Every other day
+      )
+      db_session.add(log)
+    db_session.commit()
 
     response = client.get(
         f"/api/stats/{test_habit.id}/daily-progress?days=7", headers=auth_headers)
@@ -209,31 +192,27 @@ class TestStatsEndpoints:
     data = response.json()
     assert len(data) == 14
 
-  def test_habit_daily_progress_with_quantities(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+  def test_habit_daily_progress_with_quantities(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit daily progress shows correct quantities"""
     # Create logs with different quantities
     today = date.today()
-    db = TestingSessionLocal()
-    try:
-      # Day 1: quantity 2
-      log1 = HabitLog(
-          habit_id=test_habit.id,
-          date=today,
-          quantity=2
-      )
-      db.add(log1)
+    # Day 1: quantity 2
+    log1 = HabitLog(
+        habit_id=test_habit.id,
+        date=today,
+        quantity=2
+    )
+    db_session.add(log1)
 
-      # Day 2: quantity 1
-      log2 = HabitLog(
-          habit_id=test_habit.id,
-          date=today - timedelta(days=1),
-          quantity=1
-      )
-      db.add(log2)
+    # Day 2: quantity 1
+    log2 = HabitLog(
+        habit_id=test_habit.id,
+        date=today - timedelta(days=1),
+        quantity=1
+    )
+    db_session.add(log2)
 
-      db.commit()
-    finally:
-      db.close()
+    db_session.commit()
 
     response = client.get(
         f"/api/stats/{test_habit.id}/daily-progress?days=2", headers=auth_headers)
@@ -306,7 +285,7 @@ class TestStatsEndpoints:
 
     assert response.status_code == 422  # Validation error for too large days
 
-  def test_daily_counts_multiple_days(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
+  def test_daily_counts_multiple_days(self, client: TestClient, auth_headers: dict, test_habits: list[Habit], db_session: Session):
     """Test daily counts across multiple days"""
     # Create logs for different days
     today = date.today()
@@ -318,18 +297,14 @@ class TestStatsEndpoints:
                 headers=auth_headers)
 
     # Yesterday's logs (manually created)
-    db = TestingSessionLocal()
-    try:
-      for habit in test_habits[:2]:
-        log = HabitLog(
-            habit_id=habit.id,
-            date=yesterday,
-            quantity=1
-        )
-        db.add(log)
-      db.commit()
-    finally:
-      db.close()
+    for habit in test_habits[:2]:
+      log = HabitLog(
+          habit_id=habit.id,
+          date=yesterday,
+          quantity=1
+      )
+      db_session.add(log)
+    db_session.commit()
 
     response = client.get("/api/stats/daily-counts", headers=auth_headers)
 

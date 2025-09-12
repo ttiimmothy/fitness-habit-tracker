@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
-from app.schemas.common import UserOut
+from app.schemas.user import UserOut
 
 
 class LoginRequest(BaseModel):

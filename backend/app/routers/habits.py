@@ -6,7 +6,7 @@ from app.api.dependencies.get_current_user import get_current_user
 from app.db.session import get_db
 from app.models.habit import Habit, Frequency, Category
 from app.models.user import User
-from app.schemas.common import HabitOut, HabitCreate, HabitUpdate
+from app.schemas.habit import HabitOut, HabitCreate, HabitUpdate
 
 
 router = APIRouter()
