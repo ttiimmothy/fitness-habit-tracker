@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi_limiter.depends import RateLimiter
+from app.core.config import settings
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.get_current_user import get_current_user
 from app.core.security import create_access_token, verify_password, hash_password
-from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import LoginRequest, ChangePasswordRequest, RegisterRequest, UploadProfileRequest
@@ -14,7 +14,7 @@ from app.schemas.common import UserOut
 router = APIRouter()
 
 
-@router.post("/login", response_model=dict, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+@router.post("/login", response_model=dict)
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
   user = db.query(User).filter(User.email == payload.email).first()
   if not user or not verify_password(payload.password, user.password_hash):
@@ -29,7 +29,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
       value=token,
       httponly=True,
       secure=True,  # Use HTTPS in production
-      
+
       # samesite="lax"
       samesite="none",
       max_age=settings.access_token_expire_minutes * 60  # Same as JWT token expiration
@@ -135,11 +135,12 @@ def update_profile(payload: UploadProfileRequest, db: Session = Depends(get_db),
   user = db.query(User).filter(User.id == current_user.id).first()
 
   if not user:
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No this user")
-  
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="No this user")
+
   user.name = payload.name
   db.commit()
   db.refresh(user)
   return {
-    "name": user.name
+      "name": user.name
   }

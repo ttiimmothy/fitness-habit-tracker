@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from typing import Optional
 
 
@@ -24,9 +25,10 @@ class Settings(BaseSettings):
     if not self.jwt_secret:
       raise ValueError("JWT_SECRET must be provided")
 
-  class Config:
-    env_file = ".env"
-    case_sensitive = False
+  model_config = ConfigDict(
+      env_file=".env",
+      case_sensitive=False
+  )
 
 
 settings = Settings()
