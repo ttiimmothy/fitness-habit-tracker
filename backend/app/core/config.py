@@ -1,5 +1,4 @@
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 
@@ -26,7 +25,7 @@ class Settings(BaseSettings):
     if not self.jwt_secret:
       self.jwt_secret = "test-secret-key-for-testing-only"
 
-  model_config = ConfigDict(
+  model_config = SettingsConfigDict(
       env_file=".env",
       case_sensitive=False
   )
