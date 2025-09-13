@@ -8,7 +8,7 @@ import UpdateHabitSidebar from './UpdateHabitSidebar';
 import toast from 'react-hot-toast';
 import {useTodayHabitLogsStats} from "@/hooks/useStats";
 
-export default function HabitCard() {
+export const HabitCard = () => {
   const { data: habits, isLoading, error } = useHabits();
   const { data: todayLogs, isLoading: todayLogsLoading } = useTodayHabitLogsStats();
   const logHabitMutation = useLogHabit();

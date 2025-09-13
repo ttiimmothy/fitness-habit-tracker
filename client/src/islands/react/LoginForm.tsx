@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useLogin } from '../../hooks/useAuth';
 import { loginSchema, type LoginFormData } from '../../schemas/authSchemas';
 
-export default function LoginForm() {
+export const LoginForm = () => {
   const loginMutation = useLogin();
   
   const {

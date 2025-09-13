@@ -1,10 +1,10 @@
-import {PersistQueryProvider} from './react/PersistQueryProvider';
-import IndividualHabitChart from './react/IndividualHabitChart';
+import { QueryProvider } from "../providers/QueryProvider";
+import {IndividualHabitChart} from './react/IndividualHabitChart';
 
-export default function IndividualHabitChartIsland() {
+export const IndividualHabitChartIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <IndividualHabitChart />
-    </PersistQueryProvider>
+    </QueryProvider>
   );
 }

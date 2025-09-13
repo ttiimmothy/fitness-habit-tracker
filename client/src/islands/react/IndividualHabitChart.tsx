@@ -51,7 +51,7 @@ const createCustomTooltip = (selectedHabit: any) => {
   };
 };
 
-export default function IndividualHabitChart() {
+export const IndividualHabitChart = () => {
   const { selectedHabit } = useHabitStore();
   
   // Fetch daily progress data for the selected habit

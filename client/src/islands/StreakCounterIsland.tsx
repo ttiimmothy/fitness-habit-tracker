@@ -1,10 +1,10 @@
-import {PersistQueryProvider} from "./react/PersistQueryProvider"
-import StreakCounter from "./react/StreakCounter";
+import { QueryProvider } from "../providers/QueryProvider";
+import {StreakCounter} from "./react/StreakCounter";
 
 export const StreakCounterIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <StreakCounter/>
-    </PersistQueryProvider>
+    </QueryProvider>
   )
 }

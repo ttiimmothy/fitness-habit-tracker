@@ -1,11 +1,11 @@
 ---
 import "../../styles/global.css";
-import IndividualHabitChartIsland from "../../islands/IndividualHabitChartIsland";
-import IndividualHabitQuickLogIsland from "../../islands/IndividualHabitQuickLogIsland";
+import {IndividualHabitChartIsland} from "../../islands/IndividualHabitChartIsland";
+import {IndividualHabitQuickLogIsland} from "../../islands/IndividualHabitQuickLogIsland";
 import HabitPageHeader from "../../islands/react/HabitPageHeader";
 import BackButton from "../../islands/react/BackButton";
 import Layout from "../../layouts/Layout.astro"
-import {AuthGuard} from "../../islands/react/AuthGuard";
+import {AuthGuard} from "../../providers/AuthGuard";
 
 export const prerender = false;
 ---

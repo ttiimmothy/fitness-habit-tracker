@@ -1,10 +1,10 @@
-import { PersistQueryProvider } from "./react/PersistQueryProvider";
-import ProgressChart from "./react/ProgressChart";
+import { QueryProvider } from "../providers/QueryProvider";
+import {ProgressChart} from "./react/ProgressChart";
 
 export const ProgressChartIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <ProgressChart />
-    </PersistQueryProvider>
+    </QueryProvider>
   );
 };

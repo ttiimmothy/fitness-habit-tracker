@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 
-export default function UserMenu() {
+export const UserMenu = () => {
   const { user } = useAuthStore();
   const [isLoaded, setIsLoaded] = useState(false);
 

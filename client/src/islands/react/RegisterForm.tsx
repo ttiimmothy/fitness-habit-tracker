@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useRegister } from '../../hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '../../schemas/authSchemas';
 
-export default function RegisterForm() {
+export const RegisterForm = () => {
   const registerMutation = useRegister();
   
   const {

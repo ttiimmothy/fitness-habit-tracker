@@ -6,7 +6,7 @@ import { useMultipleHabitsStats } from '../../hooks/useStats';
 import PasswordUpdateForm from './PasswordUpdateForm';
 import UpdateUsernameSidebar from './UpdateUsernameSidebar';
 
-export default function UserProfile() {
+export const UserProfile = () => {
   const { user } = useAuthStore();
   const logoutMutation = useLogout();
   const [isLoaded, setIsLoaded] = useState(false);

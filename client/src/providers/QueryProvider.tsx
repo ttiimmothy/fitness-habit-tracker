@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { PersistQueryClientProvider, persistQueryClientRestore } from '@tanstack/react-query-persist-client';
 import {createAsyncStoragePersister} from "@tanstack/query-async-storage-persister"
-import { getQueryClient } from '../../lib/getQueryClient';
-import {useAuthStore} from "../../store/authStore";
+import {useAuthStore} from "../store/authStore";
+import {getQueryClient} from "../lib/getQueryClient";
 
-export const PersistQueryProvider = ({ children }: { children: ReactNode }) => {
+export const QueryProvider = ({ children }: { children: ReactNode }) => {
   const client = getQueryClient();
   const {user} = useAuthStore()
   const persister = useMemo(

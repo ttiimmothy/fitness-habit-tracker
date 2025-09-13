@@ -1,10 +1,10 @@
-import { PersistQueryProvider } from './react/PersistQueryProvider';
-import IndividualHabitQuickLog from './react/IndividualHabitQuickLog';
+import { QueryProvider } from "../providers/QueryProvider";
+import {IndividualHabitQuickLog} from './react/IndividualHabitQuickLog';
 
-export default function IndividualHabitQuickLogIsland() {
+export const IndividualHabitQuickLogIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <IndividualHabitQuickLog />
-    </PersistQueryProvider>
+    </QueryProvider>
   );
 }

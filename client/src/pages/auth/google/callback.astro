@@ -1,0 +1,73 @@
+---
+// This page handles Google OAuth callback
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Auth Callback - Fitness & Habit Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center">
+  <div class="max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        Processing Google Login...
+      </h2>
+      <p class="text-gray-600 dark:text-gray-400">
+        Please wait while we complete your authentication.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    import {api} from "../../../lib/api"
+    // Handle Google OAuth callback
+    const callbackGoogleOAuth = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+
+        if (error) {
+          console.error('Google OAuth error:', error);
+          window.location.href = '/login?error=google_auth_failed';
+          return;
+        }
+
+        if (!code) {
+          console.error('No authorization code received');
+          window.location.href = '/login?error=no_code';
+          return;
+        }
+
+        // Send code to backend
+        const response = await api.post('/api/auth/google', { code })
+
+        if (response.status < 200 || response.status >= 300) {
+          const errorData = response.data;
+          throw new Error(errorData.message || 'Google authentication failed');
+        }
+
+        const data = response.data;
+        
+        // Store auth data
+        localStorage.setItem('auth_token', data.accessToken);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
+        
+        // Redirect to dashboard
+        window.location.href = '/';
+        
+      } catch (error) {
+        console.error('Google auth error:', error);
+        window.location.href = '/login?error=google_auth_failed';
+      }
+    };
+
+    callbackGoogleOAuth()
+  </script>
+</body>
+</html>

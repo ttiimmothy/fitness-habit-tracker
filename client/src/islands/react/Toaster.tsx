@@ -1,8 +1,8 @@
-import { Toaster } from 'react-hot-toast';
+import { Toaster as ReactToaster } from 'react-hot-toast';
 
-export default function ToasterIsland() {
+export const Toaster = () => {
   return (
-    <Toaster
+    <ReactToaster
       position="top-right"
       toastOptions={{
         duration: 4000,

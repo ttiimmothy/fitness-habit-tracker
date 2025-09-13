@@ -1,10 +1,10 @@
-import {PersistQueryProvider} from "./react/PersistQueryProvider"
-import LoginForm from "./react/LoginForm";
+import { QueryProvider } from "../providers/QueryProvider";
+import {LoginForm} from "./react/LoginForm";
 
 export const LoginFormIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <LoginForm/>
-    </PersistQueryProvider>
+    </QueryProvider>
   )
 }

@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import Layout from "../layouts/Layout.astro";
 import {UserProfileIsland} from "../islands/UserProfileIsland";
-import {AuthGuard} from "../islands/react/AuthGuard";
+import {AuthGuard} from "../providers/AuthGuard";
 ---
 <Layout>
 <AuthGuard client:load>
