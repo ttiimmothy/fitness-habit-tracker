@@ -8,12 +8,13 @@ from app.core.config import settings
 from sqlalchemy import func, and_, desc
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.get_current_user import get_current_user
+from app.api.middleware.get_current_user import get_current_user
 from app.db.session import get_db
 from app.models.habit import Habit
 from app.models.habit_log import HabitLog
 from app.models.user import User
 from app.schemas.habit_log import HabitLogCreate, HabitLogOut
+from app.schemas.stats import TodayHabitLog
 
 
 router = APIRouter()

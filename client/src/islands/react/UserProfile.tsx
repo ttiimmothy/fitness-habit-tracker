@@ -5,6 +5,7 @@ import { useHabits } from '../../hooks/useHabits';
 import { useMultipleHabitsStats } from '../../hooks/useStats';
 import PasswordUpdateForm from './PasswordUpdateForm';
 import UpdateUsernameSidebar from './UpdateUsernameSidebar';
+import { XLargeAvatar } from '../../components/Avatar';
 
 export const UserProfile = () => {
   const { user } = useAuthStore();

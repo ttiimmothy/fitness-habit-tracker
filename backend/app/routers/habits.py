@@ -2,7 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Path
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.get_current_user import get_current_user
+from app.api.middleware.get_current_user import get_current_user
 from app.db.session import get_db
 from app.models.habit import Habit, Frequency, Category
 from app.models.user import User

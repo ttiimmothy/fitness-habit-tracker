@@ -4,14 +4,13 @@ import toast from 'react-hot-toast';
 import {validateOAuthConfig, getGoogleRedirectUri} from "../config/oauth";
 import {useAuthStore, User} from "@/store/authStore";
 
-interface GoogleAuthResponse {
-  accessToken: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}
+// interface GoogleAuthResponse {
+//   user: {
+//     id: string;
+//     name: string;
+//     email: string;
+//   };
+// }
 // Types
 interface LoginCredentials {
   email: string;
@@ -154,7 +153,7 @@ export function useGoogleLogin() {
   return useMutation({
     mutationFn: async (code: string) => {
       const response = await api.post('/auth/google', { code });
-      return response.data as GoogleAuthResponse;
+      return response.data
     },
     onSuccess: (data) => {
       // Set user data in store
@@ -179,19 +178,19 @@ export function useGoogleAuth() {
     window.location.href = getGoogleAuthUrl();
   };
 
-  const handleGoogleCallback = async (code: string) => {
-    try {
-      await googleLoginMutation.mutateAsync(code);
-      // Redirect to dashboard after successful login
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Google login error:', error);
-    }
-  };
+  // const handleGoogleCallback = async (code: string) => {
+  //   try {
+  //     await googleLoginMutation.mutateAsync(code);
+  //     // Redirect to dashboard after successful login
+  //     window.location.href = '/';
+  //   } catch (error) {
+  //     console.error('Google login error:', error);
+  //   }
+  // };
 
   return {
     loginWithGoogle,
-    handleGoogleCallback,
+    // handleGoogleCallback,
     isLoading: googleLoginMutation.isPending,
     error: googleLoginMutation.error,
   };
