@@ -4,4 +4,4 @@ RUN pip install --no-cache-dir uv
 WORKDIR /app
 COPY . .
 RUN uv pip install --system -e .
-CMD ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:${PORT} app.main:app"]
+ENTRYPOINT ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:${PORT} app.main:app"]
