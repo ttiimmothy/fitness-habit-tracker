@@ -74,7 +74,7 @@ cd client
 cp .env.example .env
 # Edit .env with your API URL
 npm install
-npm run dev
+npm run start
 ```
 
 #### 4. Access the application
