@@ -52,7 +52,7 @@ cd fitness_habit_tracker
 
 ### 2. For development
 
-#### 1. Start the database and services
+#### 1. Start the database and server
 ```bash
 docker compose up --build
 ```
@@ -164,8 +164,7 @@ fitness_habit_tracker/
 │   ├── package.json
 │   ├── tailwind.config.js
 │   ├── tsconfig.json
-│   ├── vercel.json
-│   └── Dockerfile
+│   └── vercel.json
 ├── backend/                    # FastAPI backend application
 │   ├── app/
 │   │   ├── middleware/         # API middleware
@@ -222,13 +221,13 @@ fitness_habit_tracker/
 │   ├── uv.lock
 │   ├── seed.py                 # Demo data seeding
 │   ├── seed_badges.py          # Badge seeding
+│   ├── docker-compose.yml      # Development services
 │   ├── Dockerfile
 │   └── Makefile
 ├── .github/
 │   └── workflows/              # GitHub Actions CI/CD
 │       ├── backend_ci.yml
 │       └── client_ci.yml
-├── docker-compose.yml          # Development services
 ├── LICENSE
 └── README.md
 ```

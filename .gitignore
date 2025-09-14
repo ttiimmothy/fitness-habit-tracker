@@ -24,3 +24,5 @@ nginx*
 client/**/README.md
 backend/**/README.md
 **/mock
+client/Dockerfile
+.dockerignore

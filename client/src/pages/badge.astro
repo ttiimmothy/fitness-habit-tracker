@@ -3,10 +3,19 @@ import "../styles/global.css";
 import Layout from "../layouts/Layout.astro";
 import {AuthGuard} from "../providers/AuthGuard";
 import {BadgesIsland} from "../islands/BadgesIsland";
+import {BadgeProgressSummaryIsland} from "../islands/BadgeProgressSummaryIsland";
 ---
 
 <Layout>
 <AuthGuard client:load>
-  <BadgesIsland client:load />
+  <main class="max-w-5xl mx-auto p-6 space-y-8">
+    
+    <!-- Badges Grid -->
+    <BadgesIsland client:load />
+
+    <!-- Progress Summary -->
+    <BadgeProgressSummaryIsland client:load />
+
+  </main>
 </AuthGuard>
 </Layout>
