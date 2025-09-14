@@ -13,6 +13,57 @@
   overflow: hidden;
 }
 
+/* 3D horizontal spin animation for earned badges */
+@keyframes spin3d {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.animate-spin3d {
+  animation: spin3d 2s linear infinite;
+  transform-style: preserve-3d;
+}
+
+/* Enhanced 3D Isometric Trophy Effects */
+.trophy-3d {
+  filter: drop-shadow(0 16px 32px rgba(0,0,0,0.5)) drop-shadow(0 8px 16px rgba(0,0,0,0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  transform-style: preserve-3d;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  perspective: 1000px;
+}
+
+.trophy-3d-earned {
+  filter: drop-shadow(0 16px 32px rgba(255,215,0,0.6)) drop-shadow(0 8px 16px rgba(0,0,0,0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+
+.trophy-3d-progress {
+  filter: drop-shadow(0 16px 32px rgba(59,130,246,0.6)) drop-shadow(0 8px 16px rgba(0,0,0,0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+
+.trophy-3d-locked {
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  opacity: 0.6;
+}
+
+/* Modal backdrop to ensure it covers everything including header */
+.modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 50 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translate(0, 0) !important;
+}
+
 /* Custom scrollbar styles */
 .scrollbar-thin {
   scrollbar-width: thin;

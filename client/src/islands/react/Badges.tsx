@@ -1,7 +1,9 @@
+import React, { useState } from 'react';
 import { useBadges } from '../../hooks/useBadges';
 import { Badge, BadgeCategory } from '../../schemas/badgeSchemas';
+import { BadgeModal } from './BadgeModal';
 
-const BadgeCard = ({ badge }: { badge: Badge }) => {
+const BadgeCard = ({ badge, onClick }: { badge: Badge; onClick: () => void }) => {
   const getStatusBadge = () => {
     switch (badge.status) {
       case 'earned':
@@ -42,21 +44,36 @@ const BadgeCard = ({ badge }: { badge: Badge }) => {
     }
   };
 
+  const getIconClasses = () => {
+    const baseClasses = "w-12 h-12 transition-all duration-300";
+    
+    if (badge.status === 'earned') {
+      return `${baseClasses} text-yellow-500`;
+    } else if (badge.status === 'in_progress') {
+      return `${baseClasses} text-blue-500`;
+    } else {
+      return `${baseClasses} text-gray-400`;
+    }
+  };
+
   return (
-    <div className={`flex items-center p-3 rounded-lg ${getCardStyles()}`}>
+    <div 
+      className={`flex items-center p-3 rounded-lg cursor-pointer hover:shadow-md transition-all duration-200 ${getCardStyles()}`}
+      onClick={onClick}
+    >
       <div className="w-12 h-12 mr-3 flex-shrink-0">
         {badge.icon_url ? (
           <img 
             src={badge.icon_url} 
             alt={badge.title} 
-            className="w-12 h-12"
+            className={getIconClasses()}
           />
         ) : badge.emoji ? (
-          <div className="w-12 h-12 flex items-center justify-center text-2xl">
+          <div className={`${getIconClasses()} flex items-center justify-center text-2xl`}>
             {badge.emoji}
           </div>
         ) : (
-          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
+          <div className={`${getIconClasses()} bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center`}>
             🏆
           </div>
         )}
@@ -74,7 +91,7 @@ const BadgeCard = ({ badge }: { badge: Badge }) => {
   );
 };
 
-const BadgeCategorySection = ({ category }: { category: BadgeCategory }) => {
+const BadgeCategorySection = ({ category, onBadgeClick }: { category: BadgeCategory; onBadgeClick: (badge: Badge) => void }) => {
   const getCategoryIcon = () => {
     switch (category.id) {
       case 'first_steps':
@@ -103,7 +120,7 @@ const BadgeCategorySection = ({ category }: { category: BadgeCategory }) => {
       
       <div className="space-y-4">
         {category.badges.map((badge) => (
-          <BadgeCard key={badge.id} badge={badge} />
+          <BadgeCard key={badge.id} badge={badge} onClick={() => onBadgeClick(badge)} />
         ))}
       </div>
     </div>
@@ -112,6 +129,18 @@ const BadgeCategorySection = ({ category }: { category: BadgeCategory }) => {
 
 export const Badges  = () => {
   const { data: badgesData, isLoading, error } = useBadges();
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleBadgeClick = (badge: Badge) => {
+    setSelectedBadge(badge);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBadge(null);
+  };
 
   if (isLoading) {
     return (
@@ -155,7 +184,7 @@ export const Badges  = () => {
   }
 
   return (
-    <main className="max-w-5xl mx-auto p-6 space-y-8">
+    <main className="pb-6 space-y-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Achievement Badges
@@ -187,9 +216,18 @@ export const Badges  = () => {
       {/* Badge Categories */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {badgesData.categories.map((category) => (
-          <BadgeCategorySection key={category.id} category={category} />
+          <BadgeCategorySection key={category.id} category={category} onBadgeClick={handleBadgeClick} />
         ))}
       </div>
+
+      {/* Badge Modal */}
+      {selectedBadge && (
+        <BadgeModal
+          badge={selectedBadge}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      )}
     </main>
   );
 };
