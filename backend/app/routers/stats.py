@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, desc
 
-from app.api.middleware.get_current_user import get_current_user
+from app.middleware.verify_token import verify_token
 from app.db.session import get_db
 from app.models.habit import Habit
 from app.models.habit_log import HabitLog
@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("/overview/calendar", response_model=list[DayLogs])
-def overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def overview(db: Session = Depends(get_db), current_user: User = Depends(verify_token)):
   """Get comprehensive overview of all habit logs grouped by date"""
   # Get all habits for the user
   habits = db.query(Habit).filter(Habit.user_id == current_user.id).all()
@@ -73,7 +73,7 @@ def overview(db: Session = Depends(get_db), current_user: User = Depends(get_cur
 # def get_daily_log_counts(
 #   days: int = Query(default=30, ge=1, le=365, description="Number of days to look back"),
 #   db: Session = Depends(get_db),
-#   current_user: User = Depends(get_current_user)
+#   current_user: User = Depends(verify_token)
 # ):
 #   """Get daily habit log counts for the user's habits over the specified number of days."""
 #   end_date = date.today()
@@ -115,7 +115,7 @@ def overview(db: Session = Depends(get_db), current_user: User = Depends(get_cur
 def get_habit_stats_streak(
     habit_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_token)
 ):
   """Get statistics for a specific habit."""
   habit = db.query(Habit).filter(Habit.id == uuid.UUID(
@@ -222,7 +222,7 @@ def get_habit_daily_progress(
     days: int = Query(default=7, ge=1, le=365,
                       description="Number of days to look back"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_token)
 ):
   """Get daily progress for a specific habit over the specified number of days."""
   habit = db.query(Habit).filter(Habit.id == uuid.UUID(
@@ -268,7 +268,7 @@ def get_habit_daily_progress(
 @router.get("/logs/today", response_model=list[TodayHabitLog])
 def get_today_habits_logs_stats(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_token)
 ):
   """Get all user's habits with their today's log status."""
   today = date.today()

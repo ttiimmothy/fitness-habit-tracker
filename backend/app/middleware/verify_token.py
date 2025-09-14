@@ -13,7 +13,7 @@ from app.models.user import User
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
-def get_current_user(request: Request,db: Annotated[Session, Depends(get_db)], credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(bearer_scheme)] = None) -> User:
+def verify_token(request: Request,db: Annotated[Session, Depends(get_db)], credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(bearer_scheme)] = None) -> User:
   token = None
 
   # Try to get token from cookie first

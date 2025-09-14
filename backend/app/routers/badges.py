@@ -2,7 +2,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.middleware.get_current_user import get_current_user
+from app.middleware.verify_token import verify_token
 from app.db.session import get_db
 from app.models.user import User
 from app.models.habit import Habit
@@ -196,7 +196,7 @@ def get_badge_status(progress: dict | None, badge_id: str) -> BadgeStatus:
 
 
 @router.get("/", response_model=BadgesResponse)
-def get_badges(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_badges(db: Session = Depends(get_db), current_user: User = Depends(verify_token)):
   """Get all badges for the current user with progress and status"""
 
   # Get all badge templates from database
