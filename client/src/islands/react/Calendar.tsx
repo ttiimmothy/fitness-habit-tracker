@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
 import {useCalendarLogs} from "../../hooks/useStats";
+import { dateUtils } from '../../lib/dayjs';
 
 interface HabitLog {
   habit_id: string;
@@ -40,21 +41,20 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
   // Calculate the date range from earliest data to current month
   const getDateRange = () => {
     if (!habitLogs || habitLogs.length === 0) {
-      const currentDate = new Date();
+      const currentDate = dateUtils.now();
       return {
-        startDate: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
+        startDate: dateUtils.startOfMonth(currentDate).toDate(),
         endDate: currentDate
       };
     }
 
-    const dates = habitLogs.map(log => new Date(log.date));
+    const dates = habitLogs.map(log => dateUtils.parse(log.date).toDate());
     const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
-    // const latestDate = new Date(Math.max(...dates.map(d => d.getTime())));
-    const currentDate = new Date();
+    const currentDate = dateUtils.now();
 
     return {
-      startDate: new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1),
-      endDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+      startDate: dateUtils.startOfMonth(earliestDate).toDate(),
+      endDate: dateUtils.endOfMonth(currentDate).toDate()
     };
   };
 
@@ -62,47 +62,27 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
 
   // Generate all months in the range (memoized)
   const months = useMemo(() => {
-    const monthsArray = [];
-    const currentDate = new Date(startDate);
-    
-    while (currentDate <= endDate) {
-      monthsArray.push(new Date(currentDate));
-      currentDate.setMonth(currentDate.getMonth() + 1);
-    }
-    
-    return monthsArray;
+    return dateUtils.generateMonthRange(startDate, endDate);
   }, [startDate, endDate]);
 
   // Generate calendar days for a specific month
   const generateCalendarDays = (monthDate: Date) => {
-    const firstDayOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-    const lastDayOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+    const firstDayOfMonth = dateUtils.startOfMonth(monthDate);
+    const lastDayOfMonth = dateUtils.endOfMonth(monthDate);
     
     // Get first day of calendar grid (might be from previous month)
-    const firstDayOfCalendar = new Date(firstDayOfMonth);
-    firstDayOfCalendar.setDate(firstDayOfCalendar.getDate() - firstDayOfMonth.getDay());
+    const firstDayOfCalendar = firstDayOfMonth.subtract(firstDayOfMonth.day(), 'day');
     
     // Calculate the number of weeks needed for this month
-    const lastDayOfCalendar = new Date(lastDayOfMonth);
-    lastDayOfCalendar.setDate(lastDayOfCalendar.getDate() + (6 - lastDayOfMonth.getDay()));
+    const lastDayOfCalendar = lastDayOfMonth.add(6 - lastDayOfMonth.day(), 'day');
     
-    const totalDays = Math.ceil((lastDayOfCalendar.getTime() - firstDayOfCalendar.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    const weeksNeeded = Math.ceil(totalDays / 7);
-    
-    const calendarDays = [];
-    const currentDateObj = new Date(firstDayOfCalendar);
-    
-    for (let i = 0; i < weeksNeeded * 7; i++) {
-      calendarDays.push(new Date(currentDateObj));
-      currentDateObj.setDate(currentDateObj.getDate() + 1);
-    }
-    
-    return calendarDays;
+    // Generate all days in the calendar grid
+    return dateUtils.generateDateRange(firstDayOfCalendar.toDate(), lastDayOfCalendar.toDate());
   };
 
   // Get logs for a specific date
   const getLogsForDate = (date: Date): DayLogs | null => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = dateUtils.formatDate(date);
     return habitLogs?.find(log => log.date === dateStr) || null;
   };
 
@@ -139,8 +119,7 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
   // Navigate to previous/next month
   const goToPreviousMonth = () => {
     const currentIndex = months.findIndex(month => 
-      month.getMonth() === currentViewMonth.getMonth() && 
-      month.getFullYear() === currentViewMonth.getFullYear()
+      dateUtils.isSameMonth(month, currentViewMonth)
     );
     if (currentIndex > 0) {
       const prevMonth = months[currentIndex - 1];
@@ -151,8 +130,7 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
 
   const goToNextMonth = () => {
     const currentIndex = months.findIndex(month => 
-      month.getMonth() === currentViewMonth.getMonth() && 
-      month.getFullYear() === currentViewMonth.getFullYear()
+      dateUtils.isSameMonth(month, currentViewMonth)
     );
     if (currentIndex < months.length - 1) {
       const nextMonth = months[currentIndex + 1];
@@ -165,8 +143,7 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
   const handleMonthSelect = (selectedMonth: Date) => {
     setCurrentViewMonth(selectedMonth);
     const monthIndex = months.findIndex(month => 
-      month.getMonth() === selectedMonth.getMonth() && 
-      month.getFullYear() === selectedMonth.getFullYear()
+      dateUtils.isSameMonth(month, selectedMonth)
     );
     if (monthIndex !== -1) {
       scrollToMonth(monthIndex);
@@ -178,10 +155,9 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
   useEffect(() => {
     if (initializedRef.current || months.length === 0) return;
     
-    const currentDate = new Date();
+    const currentDate = dateUtils.now();
     const currentMonthIndex = months.findIndex(month => 
-      month.getMonth() === currentDate.getMonth() && 
-      month.getFullYear() === currentDate.getFullYear()
+      dateUtils.isSameMonth(month, currentDate)
     );
     
     if (currentMonthIndex !== -1) {
@@ -273,14 +249,14 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
   // Render a single month
   const renderMonth = (monthDate: Date, monthIndex: number) => {
     const calendarDays = generateCalendarDays(monthDate);
-    const isCurrentMonth = monthDate.getMonth() === new Date().getMonth() && monthDate.getFullYear() === new Date().getFullYear();
+    const isCurrentMonth = dateUtils.isSameMonth(monthDate, dateUtils.now());
 
     return (
       <div key={monthIndex} className="w-full">
         {/* Month Header */}
         <div className="flex items-center justify-between mb-3">
           <h3 className={`text-sm font-semibold ${isCurrentMonth ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
-            {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
+            {dateUtils.getMonthName(monthDate, 'short')} {dateUtils.formatDate(monthDate, 'YYYY')}
           </h3>
           {isCurrentMonth && (
             <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
@@ -306,8 +282,8 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
 
           {/* Calendar days */}
           {calendarDays.map((date, index) => {
-            const isCurrentMonth = date.getMonth() === monthDate.getMonth();
-            const isToday = date.toDateString() === new Date().toDateString();
+            const isCurrentMonth = dateUtils.isSameMonth(date, monthDate);
+            const isToday = dateUtils.isToday(date);
             const dayLogs = getLogsForDate(date);
             const completionRate = getCompletionRate(date);
             const hasLogsToday = hasLogs(date);
@@ -334,7 +310,7 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
                 onMouseMove={handleMouseMove}
                 // onClick={() => onDateClick?.(date.toISOString().split('T')[0])}
               >
-                {date.getDate()}
+                {dateUtils.formatDate(date, 'D')}
                 
                 {/* Visual indicator for days with logs */}
                 {hasLogsToday && (

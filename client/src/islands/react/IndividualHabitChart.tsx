@@ -2,6 +2,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { useHabitStore } from '../../store/habitStore';
 import { HabitDailyProgress } from '../../hooks/useHabits';
 import { useHabitDailyProgress, useHabitStats } from "../../hooks/useStats";
+import { dateUtils } from '../../lib/dayjs';
 
 // Chart data type for recharts
 type ChartDataPoint = {
@@ -21,7 +22,7 @@ const createCustomTooltip = (selectedHabit: any) => {
       return (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-            {new Date(label).toLocaleDateString('en-US', { 
+            {dateUtils.formatDateLocale(label, { 
               weekday: 'long', 
               month: 'short', 
               day: 'numeric' 
@@ -144,8 +145,7 @@ export const IndividualHabitChart = () => {
             tick={{ fill: 'currentColor', fontSize: 12 }}
             axisLine={{ stroke: 'currentColor' }}
             tickFormatter={(value) => {
-              const date = new Date(value);
-              return date.toLocaleDateString('en-US', { weekday: 'short' });
+              return dateUtils.formatDateLocale(value, { weekday: 'short' });
             }}
           />
           <YAxis 

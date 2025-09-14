@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 // import { useLogout } from '../../hooks/useAuth';
 import { useHabits } from '../../hooks/useHabits';
 import { useMultipleHabitsStats } from '../../hooks/useStats';
+import { dateUtils } from '../../lib/dayjs';
 // import PasswordUpdateForm from './PasswordUpdateForm';
 // import UpdateUsernameSidebar from './UpdateUsernameSidebar';
 // import { XLargeAvatar } from '../../components/Avatar';
@@ -114,7 +115,11 @@ export const UserProfile = () => {
                       Member Since
                     </label>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date().toLocaleDateString()}
+                      {dateUtils.formatDateLocale(dateUtils.now(), { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
                     </p>
                   </div>
                 </div>
