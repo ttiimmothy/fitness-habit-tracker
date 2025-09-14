@@ -42,8 +42,14 @@ export const GoogleLoginApi = ({children}: {children: React.ReactNode}) => {
         // localStorage.setItem('user_data', JSON.stringify(data.user));
         setAuth(data.user)
         
-        // Redirect to dashboard
-        window.location.href = '/';
+        // Check if user is from Google OAuth and needs to set up password
+        if (data.user.provider === 'google' && !data.user.has_password) {
+          // Redirect to password setup page
+          window.location.href = '/setup-password';
+        } else {
+          // Redirect to dashboard
+          window.location.href = '/';
+        }
         
       } catch (error) {
         console.error('Google auth error:', error);

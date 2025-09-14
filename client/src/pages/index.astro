@@ -5,22 +5,25 @@ import {StreakCounterIsland} from "../islands/StreakCounterIsland";
 import {ProgressChartIsland} from "../islands/ProgressChartIsland";
 import {DashboardHeader} from "../islands/react/DashboardHeader"
 import {AuthGuard} from "../providers/AuthGuard";
+import {GooglePasswordCheckIsland} from "../islands/GooglePasswordCheckIsland";
 import Layout from "../layouts/Layout.astro";
 ---
 <Layout>
 <AuthGuard client:load>
-  <main class="max-w-5xl mx-auto p-6 space-y-6">
-    <header>
-      <DashboardHeader client:load/>
-    </header>
-    
-    <section class="grid md:grid-cols-2 gap-4">
-      <StreakCounterIsland client:load />
-      <ProgressChartIsland client:load />
-    </section>
-    <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <HabitCardIsland client:load />
-    </section>
-  </main>
+  <GooglePasswordCheckIsland client:load>
+    <main class="max-w-5xl mx-auto p-6 space-y-6">
+      <header>
+        <DashboardHeader client:load/>
+      </header>
+      
+      <section class="grid md:grid-cols-2 gap-4">
+        <StreakCounterIsland client:load />
+        <ProgressChartIsland client:load />
+      </section>
+      <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <HabitCardIsland client:load />
+      </section>
+    </main>
+  </GooglePasswordCheckIsland>
 </AuthGuard>
 </Layout>

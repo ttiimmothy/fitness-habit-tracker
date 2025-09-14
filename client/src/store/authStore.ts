@@ -2,7 +2,14 @@ import { create, StateCreator } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import {api} from "../lib/api";
 
-export type User = { id: string; email: string; name?: string | null; avatar_url?: string | null };
+export type User = { 
+  id: string; 
+  email: string; 
+  name?: string | null; 
+  avatar_url?: string | null;
+  provider?: 'google' | 'email' | null;
+  has_password?: boolean;
+};
 
 type AuthState = {
   user: User | null;

@@ -9,8 +9,8 @@ from app.api.middleware.get_current_user import get_current_user
 from app.core.security import create_access_token, verify_password, hash_password
 from app.db.session import get_db
 from app.lib.get_or_create_user import get_or_create_user
-from app.models.user import User
-from app.schemas.auth import GoogleLoginRequest, LoginRequest, ChangePasswordRequest, RegisterRequest, UploadProfileRequest
+from app.models.user import Provider, User
+from app.schemas.auth import GoogleLoginRequest, LoginRequest, ChangePasswordRequest, RegisterRequest, SetupPasswordPayload, UploadProfileRequest
 from app.schemas.user import UserOut
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -22,31 +22,33 @@ router = APIRouter()
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
   user = db.query(User).filter(User.email == payload.email).first()
   if not user or not verify_password(payload.password, user.password_hash):
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
   token = create_access_token(str(user.id))
 
   # Set HTTP-only cookie
   response.set_cookie(
-      key="access_token",
-      value=token,
-      httponly=True,
-      secure=True,  # Use HTTPS in production
+    key="access_token",
+    value=token,
+    httponly=True,
+    secure=True,  # Use HTTPS in production
 
-      # samesite="lax"
-      samesite="none",
-      max_age=settings.access_token_expire_minutes * 60  # Same as JWT token expiration
+    # samesite="lax"
+    samesite="none",
+    max_age=settings.access_token_expire_minutes * 60  # Same as JWT token expiration
   )
 
   return {
-      "user": UserOut(**{
-          "id": str(user.id),
-          "email": user.email,
-          "name": user.name,
-          "avatar_url": user.avatar_url,
-          "created_at": user.created_at,
-      })
+    "user": UserOut(**{
+      "id": str(user.id),
+      "email": user.email,
+      "name": user.name,
+      "avatar_url": user.avatar_url,
+      "created_at": user.created_at,
+      
+      "provider": user.provider,
+      "has_password": user.has_password
+    })
   }
 
 
@@ -54,11 +56,14 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
 def me(current_user: User = Depends(get_current_user)):
   return {
       "user": UserOut(**{
-          "id": str(current_user.id),
-          "email": current_user.email,
-          "name": current_user.name,
-          "avatar_url": current_user.avatar_url,
-          "created_at": current_user.created_at,
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "name": current_user.name,
+        "avatar_url": current_user.avatar_url,
+        "created_at": current_user.created_at,
+          
+        "provider": current_user.provider,
+        "has_password": current_user.has_password
       })
   }
 
@@ -76,23 +81,12 @@ def logout(response: Response):
   return {"message": "Successfully logged out"}
 
 
-@router.get("/google/login")
-def google_login():
-  return {"url": "#"}
-
-
-@router.get("/google/callback")
-def google_callback():
-  raise HTTPException(status_code=501, detail="Google OAuth not enabled")
-
-
 @router.post("/change-password")
 def change_password(payload: ChangePasswordRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
   user = db.query(User).filter(User.id == current_user.id).first()
 
   if not user or not verify_password(payload.currentPassword, user.password_hash):
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
   user.password_hash = hash_password(payload.newPassword)
   db.commit()
   return {"message": "password update success"}
@@ -105,8 +99,7 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
   if user:
     raise HTTPException(status_code=409, detail="This email already register")
 
-  new_user = User(name=payload.name, email=payload.email,
-                  password_hash=hash_password(payload.password))
+  new_user = User(name=payload.name, email=payload.email, password_hash=hash_password(payload.password), provider=Provider.email)
   db.add(new_user)
   db.commit()
   db.refresh(new_user)
@@ -124,13 +117,15 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
   )
 
   return {
-      "user": UserOut(**{
-          "id": str(new_user.id),
-          "email": new_user.email,
-          "name": new_user.name,
-          "avatar_url": new_user.avatar_url,
-          "created_at": new_user.created_at,
-      })
+    "user": UserOut(**{
+      "id": str(new_user.id),
+      "email": new_user.email,
+      "name": new_user.name,
+      "avatar_url": new_user.avatar_url,
+      "created_at": new_user.created_at,
+      "provider": new_user.provider,
+      "has_password": new_user.has_password
+    })
   }
 
 
@@ -210,6 +205,8 @@ def google_auth(payload: GoogleLoginRequest, request: Request, response: Respons
         "name": user.name,
         "avatar_url": user.avatar_url,
         "created_at": user.created_at,
+        "provider": user.provider,
+        "has_password": user.has_password
       })
     }
 
@@ -219,3 +216,15 @@ def google_auth(payload: GoogleLoginRequest, request: Request, response: Respons
   except Exception as e:
     raise HTTPException(
         status_code=500, detail=f"Authentication failed: {str(e)}")
+    
+    
+@router.post("/setup-password")
+def setup_password(payload: SetupPasswordPayload, db: Session = Depends(get_db), current_user:User=Depends(get_current_user)):
+  user = db.query(User).filter(User.id == current_user.id).first()
+  if not user:
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Can't find this user")
+  user.password_hash = hash_password(payload.password)
+  user.has_password = True
+  db.commit()
+  db.refresh(user)
+  return {"message": "password setup success"}

@@ -33,3 +33,7 @@ class UploadProfileRequest(BaseModel):
 
 class GoogleLoginRequest(BaseModel):
   code: str
+  
+  
+class SetupPasswordPayload(BaseModel):
+  password: str

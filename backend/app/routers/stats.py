@@ -11,7 +11,6 @@ from app.models.habit import Habit
 from app.models.habit_log import HabitLog
 from app.models.user import User
 from app.schemas.stats import TodayHabitLog, DailyLogCount, HabitStats, HabitDailyProgress, OverviewResponse, DayLogs, HabitLogEntry
-from app.services.analytics import build_week_overview
 
 router = APIRouter()
 
