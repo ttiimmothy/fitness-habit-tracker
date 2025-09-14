@@ -16,7 +16,7 @@ def seed() -> None:
   try:
     demo = db.query(User).filter(User.email == "demo@example.com").first()
     if not demo:
-      demo = User(email="demo@example.com", password_hash=hash_password("Demo123!"), name="Demo User")
+      demo = User(email="demo@example.com", password_hash=hash_password("12"), name="Demo User")
       db.add(demo)
       db.commit()
       db.refresh(demo)

@@ -1,14 +1,15 @@
 services:
-  db:
+  postgres:
     image: postgres:17
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: fitness
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: fitness_habit_tracker
+    container_name: db
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -17,18 +18,25 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: always
+    container_name: redis-server
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6380:6379"
 
   backend:
-    build: ./backend
-    command: uv run uvicorn app.main:app --reload
+    build:
+      context: .
+    container_name: backend
+    # command: uv run uvicorn app.main:app --reload
     env_file:
-      - backend/.env
-    volumes:
-      - ./backend:/app
+      - .env
+    # volumes:
+    #   - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_started
@@ -39,4 +47,4 @@ services:
       retries: 12
 
 volumes:
-  pgdata:
+  postgres-data:
