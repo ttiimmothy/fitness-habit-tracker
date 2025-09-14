@@ -13,18 +13,18 @@ export const GoogleLoginApi = ({children}: {children: React.ReactNode}) => {
         const code = urlParams.get('code');
         const error = urlParams.get('error');
 
-        console.log('OAuth callback - code:', code);
-        console.log('OAuth callback - error:', error);
+        // console.log('OAuth callback - code:', code);
+        // console.log('OAuth callback - error:', error);
 
         if (error) {
           console.error('Google OAuth error:', error);
-          // window.location.href = '/login?error=google_auth_failed';
+          window.location.href = '/login?error=google_auth_failed';
           return;
         }
 
         if (!code) {
           console.error('No authorization code received');
-          // window.location.href = '/login?error=no_code';
+          window.location.href = '/login?error=no_code';
           return;
         }
 
@@ -43,11 +43,11 @@ export const GoogleLoginApi = ({children}: {children: React.ReactNode}) => {
         setAuth(data.user)
         
         // Redirect to dashboard
-        // window.location.href = '/';
+        window.location.href = '/';
         
       } catch (error) {
         console.error('Google auth error:', error);
-        // window.location.href = '/login?error=google_auth_failed';
+        window.location.href = '/login?error=google_auth_failed';
       }
     };
 

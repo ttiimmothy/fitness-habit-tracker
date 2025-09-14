@@ -24,9 +24,35 @@ class Settings(BaseSettings):
     if not self.jwt_secret:
       self.jwt_secret = "test-secret-key-for-testing-only"
 
+  @property
+  def google_redirect_uri_resolved(self) -> str | None:
+    """Get the appropriate Google redirect URI based on environment"""
+    if self.google_redirect_uri:
+      return self.google_redirect_uri
+
+    # Default redirect URIs based on environment
+    if self.env == "dev":
+      return "http://localhost:4321/auth/google/callback"
+    elif self.env == "prod":
+      return "https://yourdomain.com/auth/google/callback"
+    else:
+      return "http://localhost:4321/auth/google/callback"  # Default to dev
+
+  def get_google_redirect_uri_for_request(self, origin: str | None = None) -> str | None:
+    """Get Google redirect URI based on the client request"""
+    if self.google_redirect_uri:
+      return self.google_redirect_uri
+
+    # Determine environment based on request
+    if origin:
+      return origin + "/auth/google/callback"
+
+    # Fallback to environment-based logic
+    return self.google_redirect_uri_resolved
+
   model_config = SettingsConfigDict(
-      env_file=".env",
-      case_sensitive=False
+    env_file=".env",
+    case_sensitive=False
   )
 
 
