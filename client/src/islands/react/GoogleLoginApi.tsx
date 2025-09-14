@@ -41,7 +41,6 @@ export const GoogleLoginApi = ({children}: {children: React.ReactNode}) => {
         // Store auth data
         // localStorage.setItem('user_data', JSON.stringify(data.user));
         setAuth(data.user)
-        console.log(data.user)
         
         // Check if user is from Google OAuth and needs to set up password
         if (data.user.provider === 'google' && !data.user.has_password) {
