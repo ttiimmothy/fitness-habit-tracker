@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
-import {useCalendarLogs} from "../../hooks/useCalendarLogs";
+import {useCalendarLogs} from "../../hooks/useStats";
 
 interface HabitLog {
   habit_id: string;

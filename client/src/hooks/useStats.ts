@@ -9,6 +9,26 @@ export type HabitStats = {
   completion_rate: number;
 };
 
+interface HabitLog {
+  habit_id: string;
+  habit_title: string;
+  quantity: number;
+  target: number;
+  logged_at: string;
+}
+
+interface DayLogs {
+  date: string;
+  habits: HabitLog[];
+  totalLogs: number;
+}
+
+interface CalendarLogsResponse {
+  logs: DayLogs[];
+  total_days: number;
+  total_logs: number;
+}
+
 // Fetch daily progress for a specific habit
 export const useHabitDailyProgress = (habitId: string, days: number = 7) => {
   return useQuery({
@@ -89,3 +109,19 @@ export const useTodayHabitLogsStats = () => {
     },
   });
 };
+
+export function useCalendarLogs(year?: number, month?: number) {
+  return useQuery({
+    queryKey: ['calendar-logs', year, month],
+    queryFn: async (): Promise<DayLogs[]> => {
+      const params = new URLSearchParams();
+      if (year) params.append('year', year.toString());
+      if (month) params.append('month', month.toString());
+      
+      const response = await api.get(`/stats/overview/calendar`);
+      return response.data
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+}

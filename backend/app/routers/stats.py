@@ -16,7 +16,7 @@ from app.services.analytics import build_week_overview
 router = APIRouter()
 
 
-@router.get("/overview/calendar", response_model=OverviewResponse)
+@router.get("/overview/calendar", response_model=list[DayLogs])
 def overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
   """Get comprehensive overview of all habit logs grouped by date"""
   # Get all habits for the user
@@ -62,11 +62,12 @@ def overview(db: Session = Depends(get_db), current_user: User = Depends(get_cur
     ))
     total_logs += len(habits_for_day)
 
-  return OverviewResponse(
-      logs=day_logs,
-      total_days=len(day_logs),
-      total_logs=total_logs
-  )
+  return day_logs
+  # OverviewResponse(
+  #     logs=day_logs,
+  #     total_days=len(day_logs),
+  #     total_logs=total_logs
+  # )
 
 
 # @router.get("/daily-counts", response_model=list[DailyLogCount])
