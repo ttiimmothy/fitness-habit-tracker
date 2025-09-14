@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import toast from 'react-hot-toast';
 import {validateOAuthConfig, getGoogleRedirectUri} from "../config/oauth";
-import {useAuthStore, User} from "@/store/authStore";
+import {useAuthStore, User} from "../store/authStore";
 
 // interface GoogleAuthResponse {
 //   user: {
@@ -146,32 +146,32 @@ export function useUpdateProfile() {
   });
 }
 
-export function useGoogleLogin() {
-  const {setAuth} = useAuthStore();
-  const queryClient = useQueryClient();
+// export function useGoogleLogin() {
+//   const {setAuth} = useAuthStore();
+//   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (code: string) => {
-      const response = await api.post('/auth/google', { code });
-      return response.data
-    },
-    onSuccess: (data) => {
-      // Set user data in store
-      setAuth(data.user);
+//   return useMutation({
+//     mutationFn: async (code: string) => {
+//       const response = await api.post('/auth/google', { code });
+//       return response.data
+//     },
+//     onSuccess: (data) => {
+//       // Set user data in store
+//       setAuth(data.user);
       
-      // Invalidate and refetch user data
-      queryClient.invalidateQueries({ queryKey: authKeys.user() });
+//       // Invalidate and refetch user data
+//       queryClient.invalidateQueries({ queryKey: authKeys.user() });
       
-      toast.success('Successfully logged in with Google!');
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || error?.message || 'Google login failed');
-    },
-  });
-}
+//       toast.success('Successfully logged in with Google!');
+//     },
+//     onError: (error: any) => {
+//       toast.error(error?.response?.data?.message || error?.message || 'Google login failed');
+//     },
+//   });
+// }
 
 export function useGoogleAuth() {
-  const googleLoginMutation = useGoogleLogin();
+  // const googleLoginMutation = useGoogleLogin();
 
   const loginWithGoogle = () => {
     // Redirect to Google OAuth
@@ -191,8 +191,8 @@ export function useGoogleAuth() {
   return {
     loginWithGoogle,
     // handleGoogleCallback,
-    isLoading: googleLoginMutation.isPending,
-    error: googleLoginMutation.error,
+    // isLoading: googleLoginMutation.isPending,
+    // error: googleLoginMutation.error,
   };
 }
 

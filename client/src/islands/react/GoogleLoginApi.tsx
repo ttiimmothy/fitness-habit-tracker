@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {api} from "../../lib/api"
 import {useAuthStore} from "../../store/authStore"
 
-export const GoogleLogin = ({children}: {children: React.ReactNode}) => {
+export const GoogleLoginApi = ({children}: {children: React.ReactNode}) => {
   const {setAuth} = useAuthStore()
 
   useEffect(() => {

@@ -182,9 +182,9 @@ def google_auth(payload: GoogleLoginRequest, response: Response, db: Session = D
     )
 
     # Extract user information
-    user_id = idinfo['sub']
-    user_name = idinfo['name']
-    user_email = idinfo['email']
+    user_id = idinfo["sub"]
+    user_name = idinfo["name"]
+    user_email = idinfo["email"]
     user_picture = idinfo["picture"]
     
     user = get_or_create_user(db, user_id, user_name, user_email, user_picture)
@@ -212,9 +212,5 @@ def google_auth(payload: GoogleLoginRequest, response: Response, db: Session = D
 
   except requests.exceptions.RequestException as e:
     raise HTTPException(status_code=400, detail=f"Google OAuth request failed: {str(e)}")
-  except ValueError as e:
-    raise HTTPException(status_code=400, detail="Invalid Google token")
-  except KeyError as e:
-    raise HTTPException(status_code=400, detail=f"Missing required data from Google: {str(e)}")
   except Exception as e:
     raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
