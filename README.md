@@ -95,38 +95,142 @@ The application comes with seeded demo data. You can log in with:
 fitness_habit_tracker/
 ├── client/                     # Astro frontend application
 │   ├── src/
-│   │   ├── components/         # Astro components
-│   │   ├── islands/            # React interactive components
-│   │   │   └── react/          # React components
+│   │   ├── components/         # Astro and React components
+│   │   │   ├── Avatar.tsx
+│   │   │   ├── Footer.astro
+│   │   │   └── Header.astro
+│   │   ├── config/             # Configuration files
+│   │   │   └── oauth.ts
 │   │   ├── hooks/              # Custom React hooks
+│   │   │   ├── useAuth.ts
+│   │   │   ├── useBadges.ts
+│   │   │   ├── useHabitLog.ts
+│   │   │   ├── useHabits.ts
+│   │   │   └── useStats.ts
+│   │   ├── islands/            # React interactive components
+│   │   │   ├── react/          # React components
+│   │   │   ├── AccountActionIsland.tsx
+│   │   │   ├── BadgesIsland.tsx
+│   │   │   ├── CalendarIsland.tsx
+│   │   │   ├── GoogleLoginButtonIsland.tsx
+│   │   │   ├── HabitCardIsland.tsx
+│   │   │   ├── IndividualHabitChartIsland.tsx
+│   │   │   ├── LoginFormIsland.tsx
+│   │   │   ├── ProgressChartIsland.tsx
+│   │   │   ├── RegisterFormIsland.tsx
+│   │   │   ├── StreakCounterIsland.tsx
+│   │   │   ├── UserMenuIsland.tsx
+│   │   │   └── UserProfileIsland.tsx
 │   │   ├── lib/                # API client and utilities
+│   │   │   ├── api.ts
+│   │   │   ├── avatar.ts
+│   │   │   ├── dayjs.ts
+│   │   │   ├── getQueryClient.ts
+│   │   │   └── googleAuth.ts
 │   │   ├── pages/              # Astro pages
+│   │   │   ├── auth/
+│   │   │   │   └── google/
+│   │   │   │       └── callback.astro
+│   │   │   ├── badge-intro.astro
+│   │   │   ├── badge.astro
+│   │   │   ├── habit/
+│   │   │   │   └── [id].astro
+│   │   │   ├── index.astro
+│   │   │   ├── login.astro
+│   │   │   ├── register.astro
+│   │   │   ├── setup-password.astro
+│   │   │   └── user.astro
+│   │   ├── providers/          # React context providers
+│   │   │   ├── AuthGuard.tsx
+│   │   │   ├── AuthProvider.tsx
+│   │   │   ├── GoogleLoginProvider.tsx
+│   │   │   └── QueryProvider.tsx
 │   │   ├── schemas/            # Zod validation schemas
+│   │   │   ├── authSchemas.ts
+│   │   │   ├── badgeSchemas.ts
+│   │   │   └── habitSchemas.ts
 │   │   ├── store/              # Zustand stores
-│   │   └── styles/             # Global CSS
-│   ├── package.json
+│   │   │   ├── authStore.ts
+│   │   │   └── habitStore.ts
+│   │   ├── styles/             # Global CSS
+│   │   │   └── global.css
+│   │   └── layouts/
+│   │       └── Layout.astro
+│   ├── public/                 # Static assets
+│   │   ├── default-avatar-dark.svg
+│   │   ├── default-avatar.svg
+│   │   └── favicon.svg
 │   ├── astro.config.mjs
-│   └── tailwind.config.js
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   ├── vercel.json
+│   └── Dockerfile
 ├── backend/                    # FastAPI backend application
 │   ├── app/
-│   │   ├── api/                # API routes and dependencies
-│   │   │   └── routers/        # Route handlers
+│   │   ├── middleware/         # API middleware
+│   │   │   └── verify_token.py
 │   │   ├── core/               # Core configuration
+│   │   │   ├── config.py
+│   │   │   ├── rate_limit.py
+│   │   │   └── security.py
 │   │   ├── db/                 # Database configuration
+│   │   │   ├── base.py
+│   │   │   ├── base_model_imports.py
+│   │   │   └── session.py
+│   │   ├── lib/                # Utility libraries
+│   │   │   └── get_or_create_user.py
 │   │   ├── models/             # SQLAlchemy models
+│   │   │   ├── badge.py
+│   │   │   ├── habit.py
+│   │   │   ├── habit_log.py
+│   │   │   └── user.py
+│   │   ├── routers/            # API route handlers
+│   │   │   ├── auth.py
+│   │   │   ├── badges.py
+│   │   │   ├── habits.py
+│   │   │   ├── logs.py
+│   │   │   └── stats.py
 │   │   ├── schemas/            # Pydantic schemas
+│   │   │   ├── auth.py
+│   │   │   ├── badge.py
+│   │   │   ├── habit.py
+│   │   │   ├── habit_log.py
+│   │   │   ├── stats.py
+│   │   │   └── user.py
 │   │   ├── services/           # Business logic
+│   │   │   └── setup_initial_habits.py
 │   │   ├── main.py             # FastAPI app
-│   │   └── wsgi.py             # WSGI entry point
+│   │   └── problem_details.py
 │   ├── alembic/                # Database migrations
+│   │   ├── migrations/
+│   │   │   └── versions/       # Migration files
+│   │   ├── env.py
+│   │   ├── script.py.mako
+│   │   └── alembic.ini
 │   ├── tests/                  # Backend tests
+│   │   ├── routers/            # API route tests
+│   │   │   ├── test_auth.py
+│   │   │   ├── test_badges.py
+│   │   │   ├── test_habits.py
+│   │   │   ├── test_logs.py
+│   │   │   └── test_stats.py
+│   │   ├── conftest.py
+│   │   └── test_models.py
 │   ├── pyproject.toml
 │   ├── requirements.txt
-│   └── seed.py                 # Demo data seeding
+│   ├── uv.lock
+│   ├── seed.py                 # Demo data seeding
+│   ├── seed_badges.py          # Badge seeding
+│   ├── Dockerfile
+│   └── Makefile
+├── .github/
+│   └── workflows/              # GitHub Actions CI/CD
+│       ├── backend_ci.yml
+│       └── client_ci.yml
 ├── docker-compose.yml          # Development services
 ├── LICENSE
-├── README.md
-└── spec.txt
+└── README.md
 ```
 
 ## API Endpoints
