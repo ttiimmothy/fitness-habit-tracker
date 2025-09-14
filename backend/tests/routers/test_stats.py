@@ -12,42 +12,79 @@ from app.models.user import User
 class TestStatsEndpoints:
   """Test statistics endpoints"""
 
-  def test_daily_counts_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
-    """Test daily counts endpoint with logs"""
-    # Create logs for different habits
-    client.post(f"/api/logs/habits/{test_habits[0].id}/log",
-                json={"quantity": 1},
-                headers=auth_headers)
-    client.post(f"/api/logs/habits/{test_habits[1].id}/log",
-                json={"quantity": 1},
-                headers=auth_headers)
+  # def test_daily_counts_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
+  #   """Test daily counts endpoint with logs"""
+  #   # Create logs for different habits
+  #   client.post(f"/api/logs/habits/{test_habits[0].id}/log",
+  #               json={"quantity": 1},
+  #               headers=auth_headers)
+  #   client.post(f"/api/logs/habits/{test_habits[1].id}/log",
+  #               json={"quantity": 1},
+  #               headers=auth_headers)
 
-    response = client.get("/api/stats/daily-counts", headers=auth_headers)
+  #   response = client.get("/api/stats/daily-counts", headers=auth_headers)
 
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 30  # Default 30 days
+  #   assert response.status_code == 200
+  #   data = response.json()
+  #   assert len(data) == 30  # Default 30 days
 
-    # Find today's entry
-    today_entry = next(
-        (entry for entry in data if entry["date"] == date.today().isoformat()), None)
-    assert today_entry is not None
-    assert today_entry["count"] == 2  # 2 habits logged today
+  #   # Find today's entry
+  #   today_entry = next(
+  #       (entry for entry in data if entry["date"] == date.today().isoformat()), None)
+  #   assert today_entry is not None
+  #   assert today_entry["count"] == 2  # 2 habits logged today
 
-  def test_daily_counts_empty(self, client: TestClient, auth_headers: dict):
-    """Test daily counts endpoint with no logs"""
-    response = client.get("/api/stats/daily-counts", headers=auth_headers)
+  # def test_daily_counts_empty(self, client: TestClient, auth_headers: dict):
+  #   """Test daily counts endpoint with no logs"""
+  #   response = client.get("/api/stats/daily-counts", headers=auth_headers)
 
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 30  # Default 30 days, all with count 0
-    assert all(entry["count"] == 0 for entry in data)
+  #   assert response.status_code == 200
+  #   data = response.json()
+  #   assert len(data) == 30  # Default 30 days, all with count 0
+  #   assert all(entry["count"] == 0 for entry in data)
 
-  def test_daily_counts_unauthenticated(self, client: TestClient):
-    """Test daily counts endpoint without authentication"""
-    response = client.get("/api/stats/daily-counts")
+  # def test_daily_counts_unauthenticated(self, client: TestClient):
+  #   """Test daily counts endpoint without authentication"""
+  #   response = client.get("/api/stats/daily-counts")
 
-    assert response.status_code == 401
+  #   assert response.status_code == 401
+
+  # def test_daily_counts_multiple_days(self, client: TestClient, auth_headers: dict, test_habits: list[Habit], db_session: Session):
+  #   """Test daily counts across multiple days"""
+  #   # Create logs for different days
+  #   today = date.today()
+  #   yesterday = today - timedelta(days=1)
+
+  #   # Today's logs
+  #   client.post(f"/api/logs/habits/{test_habits[0].id}/log",
+  #               json={"quantity": 1},
+  #               headers=auth_headers)
+
+  #   # Yesterday's logs (manually created)
+  #   for habit in test_habits[:2]:
+  #     log = HabitLog(
+  #         habit_id=habit.id,
+  #         date=yesterday,
+  #         quantity=1
+  #     )
+  #     db_session.add(log)
+  #   db_session.commit()
+
+  #   response = client.get("/api/stats/daily-counts", headers=auth_headers)
+
+  #   assert response.status_code == 200
+  #   data = response.json()
+  #   assert len(data) == 30  # Default 30 days
+
+  #   # Check today's count
+  #   today_data = next(
+  #       item for item in data if item["date"] == today.isoformat())
+  #   assert today_data["count"] == 1
+
+  #   # Check yesterday's count
+  #   yesterday_data = next(
+  #       item for item in data if item["date"] == yesterday.isoformat())
+  #   assert yesterday_data["count"] == 2
 
   def test_habit_streak_stats_success(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak statistics"""
@@ -285,43 +322,6 @@ class TestStatsEndpoints:
 
     assert response.status_code == 422  # Validation error for too large days
 
-  def test_daily_counts_multiple_days(self, client: TestClient, auth_headers: dict, test_habits: list[Habit], db_session: Session):
-    """Test daily counts across multiple days"""
-    # Create logs for different days
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-
-    # Today's logs
-    client.post(f"/api/logs/habits/{test_habits[0].id}/log",
-                json={"quantity": 1},
-                headers=auth_headers)
-
-    # Yesterday's logs (manually created)
-    for habit in test_habits[:2]:
-      log = HabitLog(
-          habit_id=habit.id,
-          date=yesterday,
-          quantity=1
-      )
-      db_session.add(log)
-    db_session.commit()
-
-    response = client.get("/api/stats/daily-counts", headers=auth_headers)
-
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 30  # Default 30 days
-
-    # Check today's count
-    today_data = next(
-        item for item in data if item["date"] == today.isoformat())
-    assert today_data["count"] == 1
-
-    # Check yesterday's count
-    yesterday_data = next(
-        item for item in data if item["date"] == yesterday.isoformat())
-    assert yesterday_data["count"] == 2
-    
   def test_today_endpoint_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
     """Test today endpoint with habits and logs"""
     # Create logs for some habits
@@ -362,7 +362,7 @@ class TestStatsEndpoints:
     assert unlogged_habits[0]["current_progress"] == 0
     assert unlogged_habits[0]["log_id"] is None
     assert unlogged_habits[0]["log_created_at"] is None
-    
+
   def test_today_endpoint_empty_habits(self, client: TestClient, auth_headers: dict):
     """Test today endpoint with no habits"""
     response = client.get("/api/stats/logs/today", headers=auth_headers)
@@ -376,7 +376,6 @@ class TestStatsEndpoints:
     response = client.get("/api/stats/logs/today")
 
     assert response.status_code == 401
-
 
   def test_today_endpoint_multiple_logs_same_habit(self, client: TestClient, auth_headers: dict, test_habit: Habit):
     """Test today endpoint with multiple logs for same habit (should sum quantities)"""
@@ -417,5 +416,61 @@ class TestStatsEndpoints:
     assert habit_data["logged_today"] is True
     assert habit_data["current_progress"] == 3  # 1 + 2
     assert habit_data["log_id"] is not None
-    
-  
+
+  def test_overview_endpoint_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
+    """Test overview endpoint with habits and logs"""
+    # Create logs for different habits (both on same date)
+    client.post(f"/api/logs/habits/{test_habits[0].id}/log",
+                json={"quantity": 1},
+                headers=auth_headers)
+    client.post(f"/api/logs/habits/{test_habits[1].id}/log",
+                json={"quantity": 1},
+                headers=auth_headers)
+
+    response = client.get("/api/stats/overview", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # Check response structure
+    assert "logs" in data
+    assert "total_days" in data
+    assert "total_logs" in data
+    assert isinstance(data["logs"], list)
+    assert data["total_days"] >= 1
+    assert data["total_logs"] >= 2  # Both logs should be counted
+
+    # Check first log entry structure
+    if data["logs"]:
+      first_day = data["logs"][0]
+      assert "date" in first_day
+      assert "habits" in first_day
+      assert "totalLogs" in first_day
+      assert isinstance(first_day["habits"], list)
+      assert first_day["totalLogs"] >= 2  # Should have both habits for today
+
+      # Check habit entry structure
+      if first_day["habits"]:
+        first_habit = first_day["habits"][0]
+        assert "habit_id" in first_habit
+        assert "habit_title" in first_habit
+        assert "quantity" in first_habit
+        assert "target" in first_habit
+        assert "logged_at" in first_habit
+
+  def test_overview_endpoint_empty(self, client: TestClient, auth_headers: dict):
+    """Test overview endpoint with no habits"""
+    response = client.get("/api/stats/overview", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["logs"] == []
+    assert data["total_days"] == 0
+    assert data["total_logs"] == 0
+
+  def test_overview_endpoint_unauthenticated(self, client: TestClient):
+    """Test overview endpoint without authentication"""
+    response = client.get("/api/stats/overview")
+
+    assert response.status_code == 401

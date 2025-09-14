@@ -117,27 +117,27 @@ export const IndividualHabitChart = () => {
         </h3>
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span>Target: {selectedHabit.target}</span>
-          <span>•</span>
+          {/* <span>•</span> */}
           <span>Completed: {dailyProgress?.filter(day => day.completed).length || 0}/7 days</span>
-          <span>•</span>
+          {/* <span>•</span> */}
           <span>Success Rate: {dailyProgress ? Math.round((dailyProgress.filter(day => day.completed).length / dailyProgress.length) * 100) : 0}%</span>
           {habitStats && (
             <>
-              <span>•</span>
+              {/* <span>•</span> */}
               <span className="flex items-center gap-1">
                 <span className="text-orange-500">🔥</span>
                 Current Streak: {habitStats.current_streak}
               </span>
-              <span>•</span>
+              {/* <span>•</span>
               <span className="flex items-center gap-1">
                 <span className="text-yellow-500">⭐</span>
                 Longest Streak: {habitStats.longest_streak}
-              </span>
+              </span> */}
             </>
           )}
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300} className="pr-6">
         <LineChart data={chartData}>
           <XAxis 
             dataKey="date" 
@@ -159,9 +159,10 @@ export const IndividualHabitChart = () => {
             type="monotone" 
             dataKey="progress" 
             stroke={selectedHabit.color || '#3B82F6'} 
-            strokeWidth={3}
-            dot={{ r: 5, fill: selectedHabit.color || '#3B82F6' }}
-            activeDot={{ r: 7, fill: selectedHabit.color || '#3B82F6' }}
+            strokeWidth={2}
+            // dot={{ r: 5, fill: selectedHabit.color || '#3B82F6' }}
+            // activeDot={{ r: 7, fill: selectedHabit.color || '#3B82F6' }}
+            dot={{r:4}}
           />
         </LineChart>
       </ResponsiveContainer>

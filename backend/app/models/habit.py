@@ -24,6 +24,7 @@ class Category(str, enum.Enum):
   social = "social"
   creative = "creative"
   financial = "financial"
+  hobby = "hobby"
   other = "other"
 
 
@@ -44,5 +45,4 @@ class Habit(Base):
       DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
   user = relationship("User", back_populates="habits")
-  logs = relationship("HabitLog", back_populates="habit",
-                      cascade="all, delete-orphan")
+  logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")

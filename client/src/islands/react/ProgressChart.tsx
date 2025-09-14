@@ -147,7 +147,7 @@ export const ProgressChart = () => {
   return (
     <div className="p-4 border rounded bg-white dark:bg-neutral-900">
       <div className="mb-4 font-medium">Habit Progress - Last 7 days</div>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300} className="pr-6">
         <LineChart data={chartData}>
           <XAxis 
             dataKey="date" 

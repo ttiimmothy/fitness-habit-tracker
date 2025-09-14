@@ -6,7 +6,7 @@ import {useLogHabit} from "../../hooks/useHabitLog";
 import { Trash2, Edit } from 'lucide-react';
 import UpdateHabitSidebar from './UpdateHabitSidebar';
 import toast from 'react-hot-toast';
-import {useTodayHabitLogsStats} from "@/hooks/useStats";
+import {useTodayHabitLogsStats} from "../../hooks/useStats";
 
 export const HabitCard = () => {
   const { data: habits, isLoading, error } = useHabits();

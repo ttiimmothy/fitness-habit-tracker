@@ -8,7 +8,6 @@ class Settings(BaseSettings):
   database_url: str | None = None
   jwt_secret: str | None = None
   access_token_expire_minutes: int = 7 * 24 * 60
-  client_url: str = "http://localhost:4321"
   redis_url: str = "redis://localhost:6379/0"
   rate_limit_enabled: bool = True
 

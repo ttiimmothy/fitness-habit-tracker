@@ -14,17 +14,16 @@ router = APIRouter()
 
 @router.get("", response_model=list[HabitOut])
 def list_habits(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habits = db.query(Habit).filter(
-      Habit.user_id == current_user.id).order_by(Habit.created_at.desc()).all()
+  habits = db.query(Habit).filter(Habit.user_id == current_user.id).order_by(Habit.created_at.desc()).all()
   return [HabitOut(**{
-      "id": str(h.id),
-      "user_id": str(h.user_id),
-      "title": h.title,
-      "frequency": h.frequency.value,
-      "target": h.target,
-      "category": h.category.value,
-      "description": h.description,
-      "created_at": h.created_at,
+    "id": str(h.id),
+    "user_id": str(h.user_id),
+    "title": h.title,
+    "frequency": h.frequency.value,
+    "target": h.target,
+    "category": h.category.value,
+    "description": h.description,
+    "created_at": h.created_at,
   }) for h in habits]
 
 
@@ -40,20 +39,19 @@ def create_habit(payload: HabitCreate, db: Session = Depends(get_db), current_us
   except ValueError:
     raise HTTPException(status_code=422, detail="Invalid category")
 
-  habit = Habit(user_id=current_user.id, title=payload.title, frequency=freq,
-                target=payload.target, category=category, description=payload.description)
+  habit = Habit(user_id=current_user.id, title=payload.title, frequency=freq, target=payload.target, category=category, description=payload.description)
   db.add(habit)
   db.commit()
   db.refresh(habit)
   return HabitOut(**{
-      "id": str(habit.id),
-      "user_id": str(habit.user_id),
-      "title": habit.title,
-      "frequency": habit.frequency.value,
-      "target": habit.target,
-      "category": habit.category.value,
-      "description": habit.description,
-      "created_at": habit.created_at,
+    "id": str(habit.id),
+    "user_id": str(habit.user_id),
+    "title": habit.title,
+    "frequency": habit.frequency.value,
+    "target": habit.target,
+    "category": habit.category.value,
+    "description": habit.description,
+    "created_at": habit.created_at,
   })
 
 
