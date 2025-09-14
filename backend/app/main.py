@@ -53,11 +53,11 @@ def create_app() -> FastAPI:
 
   app.include_router(api_router)
 
-  @app.middleware("http")
-  async def _log_origin(request, call_next):
-    if "origin" in request.headers:
-      print("Origin seen by server ->", request.headers["origin"])
-    return await call_next(request)
+  # @app.middleware("http")
+  # async def _log_origin(request, call_next):
+  #   if "origin" in request.headers:
+  #     print("Origin seen by server ->", request.headers["origin"])
+  #   return await call_next(request)
 
   @app.get("/health")
   async def health():
