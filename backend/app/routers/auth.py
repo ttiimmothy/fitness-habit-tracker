@@ -12,6 +12,7 @@ from app.lib.get_or_create_user import get_or_create_user
 from app.models.user import Provider, User
 from app.schemas.auth import GoogleLoginRequest, LoginRequest, ChangePasswordRequest, RegisterRequest, SetupPasswordPayload, UploadProfileRequest
 from app.schemas.user import UserOut
+from app.services.setup_initial_habits import setup_initial_habits, has_existing_habits
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
@@ -45,7 +46,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
       "name": user.name,
       "avatar_url": user.avatar_url,
       "created_at": user.created_at,
-      
+
       "provider": user.provider,
       "has_password": user.has_password
     })
@@ -55,16 +56,16 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
 @router.get("/me", response_model=dict)
 def me(current_user: User = Depends(get_current_user)):
   return {
-      "user": UserOut(**{
-        "id": str(current_user.id),
-        "email": current_user.email,
-        "name": current_user.name,
-        "avatar_url": current_user.avatar_url,
-        "created_at": current_user.created_at,
-          
-        "provider": current_user.provider,
-        "has_password": current_user.has_password
-      })
+    "user": UserOut(**{
+      "id": str(current_user.id),
+      "email": current_user.email,
+      "name": current_user.name,
+      "avatar_url": current_user.avatar_url,
+      "created_at": current_user.created_at,
+
+      "provider": current_user.provider,
+      "has_password": current_user.has_password
+    })
   }
 
 
@@ -72,11 +73,11 @@ def me(current_user: User = Depends(get_current_user)):
 def logout(response: Response):
   # Clear the access token cookie
   response.delete_cookie(
-      key="access_token",
-      httponly=True,
-      secure=True,
-      # samesite="lax"
-      samesite="none"
+    key="access_token",
+    httponly=True,
+    secure=True,
+    # samesite="lax"
+    samesite="none"
   )
   return {"message": "Successfully logged out"}
 
@@ -103,6 +104,9 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
   db.add(new_user)
   db.commit()
   db.refresh(new_user)
+
+  # Create demo habits for new user
+  setup_initial_habits(str(new_user.id), db)
 
   token = create_access_token(str(new_user.id))
 
@@ -134,15 +138,12 @@ def update_profile(payload: UploadProfileRequest, db: Session = Depends(get_db),
   user = db.query(User).filter(User.id == current_user.id).first()
 
   if not user:
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="No this user")
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No this user")
 
   user.name = payload.name
   db.commit()
   db.refresh(user)
-  return {
-      "name": user.name
-  }
+  return {"name": user.name}
 
 
 @router.post("/google", response_model=dict)
@@ -187,6 +188,11 @@ def google_auth(payload: GoogleLoginRequest, request: Request, response: Respons
     user_picture = idinfo["picture"]
 
     user = get_or_create_user(db, user_id, user_name, user_email, user_picture)
+
+    # Create demo habits for new Google users (check if they have existing habits)
+    if not has_existing_habits(str(user.id), db):
+      setup_initial_habits(str(user.id), db)
+
     token = create_access_token(str(user.id))
 
     response.set_cookie(
@@ -211,15 +217,13 @@ def google_auth(payload: GoogleLoginRequest, request: Request, response: Respons
     }
 
   except requests.exceptions.RequestException as e:
-    raise HTTPException(
-        status_code=400, detail=f"Google OAuth request failed: {str(e)}")
+    raise HTTPException(status_code=400, detail=f"Google OAuth request failed: {str(e)}")
   except Exception as e:
-    raise HTTPException(
-        status_code=500, detail=f"Authentication failed: {str(e)}")
-    
-    
+    raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+
+
 @router.post("/setup-password")
-def setup_password(payload: SetupPasswordPayload, db: Session = Depends(get_db), current_user:User=Depends(get_current_user)):
+def setup_password(payload: SetupPasswordPayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
   user = db.query(User).filter(User.id == current_user.id).first()
   if not user:
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Can't find this user")

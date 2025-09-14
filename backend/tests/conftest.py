@@ -60,6 +60,73 @@ def db_session() -> Generator[Session, None, None]:
 
   db = TestingSessionLocal()
   try:
+    # Seed badge templates for tests
+    from app.models.badge import Badge, BadgeStatus, BadgeCategoryEnum
+    from datetime import datetime
+
+    # Clear existing badges
+    db.query(Badge).delete()
+
+    # Create basic badge templates for testing
+    test_badges = [
+        {
+            "badge_id": "first_habit",
+            "title": "First Habit",
+            "description": "Create your first habit",
+            "category": BadgeCategoryEnum.first_steps,
+            "icon_url": "https://img.icons8.com/color/48/000000/medal2.png",
+            "emoji": "🏆",
+            "status": BadgeStatus.locked,
+            "requirements": "Create at least 1 habit"
+        },
+        {
+            "badge_id": "first_log",
+            "title": "First Log",
+            "description": "Log your first habit completion",
+            "category": BadgeCategoryEnum.first_steps,
+            "icon_url": "https://img.icons8.com/fluency/48/000000/checkmark.png",
+            "emoji": "✅",
+            "status": BadgeStatus.locked,
+            "requirements": "Log at least 1 habit completion"
+        },
+        {
+            "badge_id": "workout_warrior",
+            "title": "Workout Warrior",
+            "description": "Complete 50 workout sessions",
+            "category": BadgeCategoryEnum.fitness,
+            "icon_url": "https://img.icons8.com/fluency/48/000000/dumbbell.png",
+            "emoji": "💪",
+            "status": BadgeStatus.locked,
+            "requirements": "Complete 50 workout habit logs"
+        },
+        {
+            "badge_id": "sharing_champion",
+            "title": "Sharing Champion",
+            "description": "Share your progress 10 times",
+            "category": BadgeCategoryEnum.social,
+            "icon_url": "https://img.icons8.com/fluency/48/000000/share.png",
+            "emoji": "📤",
+            "status": BadgeStatus.locked,
+            "requirements": "Share progress 10 times"
+        }
+    ]
+
+    for badge_data in test_badges:
+      badge = Badge(
+          badge_id=badge_data["badge_id"],
+          title=badge_data["title"],
+          description=badge_data["description"],
+          category=badge_data["category"],
+          icon_url=badge_data["icon_url"],
+          emoji=badge_data["emoji"],
+          status=badge_data["status"],
+          requirements=badge_data["requirements"],
+          created_at=datetime.now()
+      )
+      db.add(badge)
+
+    db.commit()
+
     yield db
   finally:
     db.close()

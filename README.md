@@ -11,7 +11,7 @@ A full-stack application for tracking fitness habits and building healthy routin
 - 📈 **Analytics Dashboard**: View detailed statistics and progress over time
 - 🌙 **Dark Mode**: Toggle between light and dark themes
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile
-- 🔐 **Secure Authentication**: JWT-based authentication with password hashing
+- 🔐 **Secure Authentication**: JWT-based authentication with password hashing + Google OAuth
 - ⚡ **Real-time Updates**: Fast and responsive user interface
 
 ## Tech Stack

@@ -30,6 +30,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/triple-slash-reference': 'off',
+      "no-case-declarations": "off"
     },
   },
 

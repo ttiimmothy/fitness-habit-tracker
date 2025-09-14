@@ -10,6 +10,7 @@ from app.routers import auth
 from app.routers import habits
 from app.routers import logs
 from app.routers import stats
+from app.routers import badges
 
 
 @asynccontextmanager
@@ -50,6 +51,7 @@ def create_app() -> FastAPI:
   api_router.include_router(habits.router, prefix="/habits", tags=["habits"])
   api_router.include_router(logs.router, prefix="/logs/habits", tags=["logs"])
   api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
+  api_router.include_router(badges.router, prefix="/badges", tags=["badges"])
 
   app.include_router(api_router)
 
