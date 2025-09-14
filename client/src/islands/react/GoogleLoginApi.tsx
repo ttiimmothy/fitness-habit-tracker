@@ -24,7 +24,7 @@ export const GoogleLoginApi = ({children}: {children: React.ReactNode}) => {
 
         if (!code) {
           console.error('No authorization code received');
-          window.location.href = '/login?error=no_code';
+          // window.location.href = '/login?error=no_code';
           return;
         }
 
