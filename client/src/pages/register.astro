@@ -2,21 +2,38 @@
 import "../styles/global.css";
 import {RegisterFormIsland} from "../islands/RegisterFormIsland";
 import Layout from "../layouts/Layout.astro";
-
-import {LoginAuthCheck} from "../islands/react/LoginAuthCheck";
+import {AuthProvider} from "../providers/AuthProvider";
+import {GoogleLoginButtonIsland} from "../islands/GoogleLoginButtonIsland";
+import {LoginErrorHandler} from "../islands/react/LoginErrorHandler";
 ---
 
 <Layout>
-<LoginAuthCheck client:load>
+<AuthProvider client:load>
 <main class="grid place-items-center p-6">
   <div class="w-full max-w-sm rounded-xl shadow p-6">
     <div class="text-center mb-6">
       <h1 class="text-2xl font-semibold mb-2">Fitness & Habit Tracker</h1>
       <p class="text-sm text-gray-600 dark:text-gray-400">Create your account</p>
     </div>
+    
+    <!-- Error Handler -->
+    <LoginErrorHandler client:load />
+    
+    <!-- Google Login Button -->
+    <div class="mb-6">
+      <GoogleLoginButtonIsland client:load />
+    </div>
+    
+    <!-- Divider -->
+    <div class="flex items-center mb-6">
+      <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+      <span class="px-2 text-sm text-gray-500 dark:text-gray-400">Or continue with email</span>
+      <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+    </div>
+    
     <RegisterFormIsland client:load />
   </div>
   <a class="fixed top-4 right-4 text-sm opacity-70 hover:opacity-100" href="/">Home</a>
  </main>
-</LoginAuthCheck>
+</AuthProvider>
 </Layout>

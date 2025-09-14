@@ -8,7 +8,7 @@ export const useLogHabit = () => {
   
   return useMutation({
     mutationFn: async ({ id, quantity = 1 }: { id: string; quantity?: number }): Promise<void> => {
-      await api.post(`/habits/logs/${id}/log`, { quantity });
+      await api.post(`/logs/habits/${id}/log`, { quantity });
     },
     onSuccess: (_, { id }) => {
       // Invalidate habits and related queries

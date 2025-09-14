@@ -29,3 +29,7 @@ class RegisterRequest(BaseModel):
   
 class UploadProfileRequest(BaseModel):
   name: str
+  
+
+class GoogleLoginRequest(BaseModel):
+  code: str

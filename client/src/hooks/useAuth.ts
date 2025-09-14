@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { useAuthStore, type User } from '../store/authStore';
+import toast from 'react-hot-toast';
+import {validateOAuthConfig, getGoogleRedirectUri} from "../config/oauth";
+import {useAuthStore, User} from "../store/authStore";
 
+// interface GoogleAuthResponse {
+//   user: {
+//     id: string;
+//     name: string;
+//     email: string;
+//   };
+// }
 // Types
 interface LoginCredentials {
   email: string;
@@ -86,7 +95,7 @@ export function useUser() {
 }
 
 export function useLogout() {
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const {setAuth} = useAuthStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -136,3 +145,74 @@ export function useUpdateProfile() {
     },
   });
 }
+
+// export function useGoogleLogin() {
+//   const {setAuth} = useAuthStore();
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: async (code: string) => {
+//       const response = await api.post('/auth/google', { code });
+//       return response.data
+//     },
+//     onSuccess: (data) => {
+//       // Set user data in store
+//       setAuth(data.user);
+      
+//       // Invalidate and refetch user data
+//       queryClient.invalidateQueries({ queryKey: authKeys.user() });
+      
+//       toast.success('Successfully logged in with Google!');
+//     },
+//     onError: (error: any) => {
+//       toast.error(error?.response?.data?.message || error?.message || 'Google login failed');
+//     },
+//   });
+// }
+
+export function useGoogleAuth() {
+  // const googleLoginMutation = useGoogleLogin();
+
+  const loginWithGoogle = () => {
+    // Redirect to Google OAuth
+    window.location.href = getGoogleAuthUrl();
+  };
+
+  // const handleGoogleCallback = async (code: string) => {
+  //   try {
+  //     await googleLoginMutation.mutateAsync(code);
+  //     // Redirect to dashboard after successful login
+  //     window.location.href = '/';
+  //   } catch (error) {
+  //     console.error('Google login error:', error);
+  //   }
+  // };
+
+  return {
+    loginWithGoogle,
+    // handleGoogleCallback,
+    // isLoading: googleLoginMutation.isPending,
+    // error: googleLoginMutation.error,
+  };
+}
+
+// Helper function to get Google auth URL
+const getGoogleAuthUrl = () => {
+  const GOOGLE_CLIENT_ID = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
+  const redirectUri = getGoogleRedirectUri();
+  
+  if (!GOOGLE_CLIENT_ID || !validateOAuthConfig()) {
+    throw new Error('Google OAuth Client ID not configured');
+  }
+  
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+    response_type: 'code',
+    access_type: 'offline',
+    prompt: 'consent',
+  });
+
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+};

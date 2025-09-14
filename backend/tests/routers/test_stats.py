@@ -15,10 +15,10 @@ class TestStatsEndpoints:
   def test_daily_counts_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
     """Test daily counts endpoint with logs"""
     # Create logs for different habits
-    client.post(f"/api/logs/{test_habits[0].id}/log",
+    client.post(f"/api/logs/habits/{test_habits[0].id}/log",
                 json={"quantity": 1},
                 headers=auth_headers)
-    client.post(f"/api/logs/{test_habits[1].id}/log",
+    client.post(f"/api/logs/habits/{test_habits[1].id}/log",
                 json={"quantity": 1},
                 headers=auth_headers)
 
@@ -292,7 +292,7 @@ class TestStatsEndpoints:
     yesterday = today - timedelta(days=1)
 
     # Today's logs
-    client.post(f"/api/logs/{test_habits[0].id}/log",
+    client.post(f"/api/logs/habits/{test_habits[0].id}/log",
                 json={"quantity": 1},
                 headers=auth_headers)
 
@@ -321,3 +321,101 @@ class TestStatsEndpoints:
     yesterday_data = next(
         item for item in data if item["date"] == yesterday.isoformat())
     assert yesterday_data["count"] == 2
+    
+  def test_today_endpoint_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
+    """Test today endpoint with habits and logs"""
+    # Create logs for some habits
+    response1 = client.post(f"/api/logs/habits/{test_habits[0].id}/log",
+                            json={"quantity": 1},
+                            headers=auth_headers)
+    assert response1.status_code == 200
+
+    response2 = client.post(f"/api/logs/habits/{test_habits[1].id}/log",
+                            json={"quantity": 1},
+                            headers=auth_headers)
+    assert response2.status_code == 200
+
+    response = client.get("/api/stats/logs/today", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 3  # All 3 test habits
+
+    # Check that habits are included
+    habit_ids = [habit["habit_id"] for habit in data]
+    assert str(test_habits[0].id) in habit_ids
+    assert str(test_habits[1].id) in habit_ids
+    assert str(test_habits[2].id) in habit_ids
+
+    # Check logged habits have correct data
+    logged_habits = [h for h in data if h["logged_today"]]
+    assert len(logged_habits) == 2
+
+    for habit in logged_habits:
+      assert habit["current_progress"] > 0
+      assert habit["log_id"] is not None
+      assert habit["log_created_at"] is not None
+
+    # Check unlogged habits
+    unlogged_habits = [h for h in data if not h["logged_today"]]
+    assert len(unlogged_habits) == 1
+    assert unlogged_habits[0]["current_progress"] == 0
+    assert unlogged_habits[0]["log_id"] is None
+    assert unlogged_habits[0]["log_created_at"] is None
+    
+  def test_today_endpoint_empty_habits(self, client: TestClient, auth_headers: dict):
+    """Test today endpoint with no habits"""
+    response = client.get("/api/stats/logs/today", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data == []
+
+  def test_today_endpoint_unauthenticated(self, client: TestClient):
+    """Test today endpoint without authentication"""
+    response = client.get("/api/stats/logs/today")
+
+    assert response.status_code == 401
+
+
+  def test_today_endpoint_multiple_logs_same_habit(self, client: TestClient, auth_headers: dict, test_habit: Habit):
+    """Test today endpoint with multiple logs for same habit (should sum quantities)"""
+    # First create a habit with higher target for this test
+    habit_response = client.post("/api/habits",
+                                 json={
+                                     "title": "High Target Habit",
+                                     "description": "A habit with high target",
+                                     "category": "fitness",
+                                     "frequency": "daily",
+                                     "target": 5
+                                 },
+                                 headers=auth_headers)
+    assert habit_response.status_code == 201
+    habit_data = habit_response.json()
+
+    # Create multiple logs for same habit
+    client.post(f"/api/logs/habits/{habit_data['id']}/log",
+                json={"quantity": 1},
+                headers=auth_headers)
+    client.post(f"/api/logs/habits/{habit_data['id']}/log",
+                json={"quantity": 2},
+                headers=auth_headers)
+
+    response = client.get("/api/stats/logs/today", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # Find the habit we created (should have current_progress of 3)
+    habit_data = None
+    for habit in data:
+      if habit["current_progress"] == 3:
+        habit_data = habit
+        break
+
+    assert habit_data is not None, "Could not find habit with current_progress of 3"
+    assert habit_data["logged_today"] is True
+    assert habit_data["current_progress"] == 3  # 1 + 2
+    assert habit_data["log_id"] is not None
+    
+  

@@ -1,10 +1,10 @@
-import {PersistQueryProvider} from "./react/PersistQueryProvider"
-import UserMenu from "./react/UserMenu";
+import { QueryProvider } from "../providers/QueryProvider";
+import {UserMenu} from "./react/UserMenu";
 
 export const UserMenuIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <UserMenu/>
-    </PersistQueryProvider>
+    </QueryProvider>
   )
 }

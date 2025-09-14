@@ -1,7 +1,7 @@
 import { useHabits } from '../../hooks/useHabits';
 import { useMultipleHabitsStats } from '../../hooks/useStats';
 
-export default function StreakCounter() {
+export const StreakCounter = () => {
   const { data: habits, isLoading: habitsLoading, error: habitsError } = useHabits();
   const habitIds = habits?.map(habit => habit.id) || [];
   const { data: habitsStats, isLoading: statsLoading, error: statsError } = useMultipleHabitsStats(habitIds);

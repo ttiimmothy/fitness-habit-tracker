@@ -7,7 +7,7 @@ import { Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {useTodayHabitLogsStats} from "@/hooks/useStats";
 
-export default function IndividualHabitQuickLog() {
+export const IndividualHabitQuickLog = () => {
   const { selectedHabit, clearSelectedHabit } = useHabitStore();
   const { data: todayLogs, isLoading: todayLogsLoading } = useTodayHabitLogsStats();
   const logHabitMutation = useLogHabit();

@@ -50,7 +50,7 @@ def create_app() -> FastAPI:
   api_router.include_router(auth_router.router, prefix="/auth", tags=["auth"])
   api_router.include_router(
       habits_router.router, prefix="/habits", tags=["habits"])
-  api_router.include_router(logs_router.router, prefix="/logs", tags=["logs"])
+  api_router.include_router(logs_router.router, prefix="/logs/habits", tags=["logs"])
   api_router.include_router(
       stats_router.router, prefix="/stats", tags=["stats"])
 

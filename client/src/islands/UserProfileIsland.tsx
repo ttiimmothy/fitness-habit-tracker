@@ -1,10 +1,10 @@
-import { PersistQueryProvider } from "./react/PersistQueryProvider";
-import UserProfile from "./react/UserProfile";
+import { QueryProvider } from "../providers/QueryProvider";
+import {UserProfile} from "./react/UserProfile";
 
 export const UserProfileIsland = () => {
   return (
-    <PersistQueryProvider>
+    <QueryProvider>
       <UserProfile />
-    </PersistQueryProvider>
+    </QueryProvider>
   );
 };

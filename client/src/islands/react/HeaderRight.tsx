@@ -1,7 +1,7 @@
 import {useAuthStore} from "../../store/authStore";
 import {DarkModeToggle} from "./DarkModeToggle";
 
-const HeaderRight = () => {
+export const HeaderRight = () => {
   const {user} = useAuthStore()
   
   return (
@@ -23,5 +23,3 @@ const HeaderRight = () => {
     </>
   )
 }
-
-export default HeaderRight

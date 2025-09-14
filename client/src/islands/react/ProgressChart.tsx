@@ -50,7 +50,7 @@ const createCustomTooltip = (habits: any[]) => {
   };
 };
 
-export default function ProgressChart() {
+export const ProgressChart = () => {
   const { data: habits, isLoading: habitsLoading, error: habitsError } = useHabits();
   
   // Get habit IDs for fetching daily progress

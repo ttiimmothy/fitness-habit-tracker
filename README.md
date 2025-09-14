@@ -247,7 +247,8 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 
 ### Frontend (.env)
 ```env
-PUBLIC_VITE_API_URL=http://localhost:8000
+PUBLIC_API_URL=http://localhost:8000
+PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
 ## Contributing

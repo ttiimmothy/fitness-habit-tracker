@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, desc
 
-from app.api.dependencies.get_current_user import get_current_user
+from app.api.middleware.get_current_user import get_current_user
 from app.db.session import get_db
 from app.models.habit import Habit
 from app.models.habit_log import HabitLog

@@ -2,7 +2,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  PUBLIC_VITE_API_URL: string;
+  PUBLIC_API_URL: string;
+  PUBLIC_GOOGLE_CLIENT_ID: string;
   PUBLIC_OTHER_KEY?: string;
 }
 
