@@ -168,9 +168,8 @@ fitness_habit_tracker/
 │   └── Dockerfile
 ├── backend/                    # FastAPI backend application
 │   ├── app/
-│   │   ├── api/                # API dependencies
-│   │   │   └── middleware/
-│   │   │       └── get_current_user.py
+│   │   ├── middleware/         # API middleware
+│   │   │   └── verify_token.py
 │   │   ├── core/               # Core configuration
 │   │   │   ├── config.py
 │   │   │   ├── rate_limit.py
