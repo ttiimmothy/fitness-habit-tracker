@@ -305,6 +305,7 @@ uv run python seed.py
 
 ### Build and run with Docker Compose
 ```bash
+cd backend
 # Build all services
 docker compose build
 
@@ -323,10 +324,6 @@ docker compose down
 # Backend
 cd backend
 docker build -t fitness-tracker-backend .
-
-# Frontend
-cd client
-docker build -t fitness-tracker-frontend .
 ```
 
 ## Environment Variables
