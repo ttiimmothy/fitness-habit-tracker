@@ -2,7 +2,9 @@
 import "../styles/global.css";
 import Layout from "../layouts/Layout.astro";
 import {UserProfileIsland} from "../islands/UserProfileIsland";
+import CalendarIsland from "../islands/CalendarIsland";
 import {AuthGuard} from "../providers/AuthGuard";
+import {AccountActionIsland} from "../islands/AccountActionIsland";
 ---
 <Layout>
 <AuthGuard client:load>
@@ -13,6 +15,17 @@ import {AuthGuard} from "../providers/AuthGuard";
     </div>
     
     <UserProfileIsland client:load />
+    
+    <!-- Habit Calendar Section -->
+    <div class="my-8">
+      <!-- <div class="mb-4">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Habit Calendar</h2>
+        <p class="text-gray-600 dark:text-gray-400">View your habit progress across all months in a compact grid layout</p>
+      </div> -->
+      <CalendarIsland client:load />
+    </div>
+    
+    <AccountActionIsland client:load/>
   </main>
 </AuthGuard>
 </Layout>

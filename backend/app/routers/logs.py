@@ -40,15 +40,9 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
   if new_total_quantity > habit.target:
     remaining = habit.target - current_quantity
     if remaining <= 0:
-      raise HTTPException(
-          status_code=400,
-          detail=f"Habit target already reached for {log_date}. Target: {habit.target}, Current: {current_quantity}"
-      )
+      raise HTTPException(status_code=400, detail=f"Habit target already reached for {log_date}. Target: {habit.target}, Current: {current_quantity}")
     else:
-      raise HTTPException(
-          status_code=400,
-          detail=f"Quantity would exceed habit target. Target: {habit.target}, Current: {current_quantity}, Requested: {payload.quantity}, Remaining: {remaining}"
-      )
+      raise HTTPException(status_code=400, detail=f"Quantity would exceed habit target. Target: {habit.target}, Current: {current_quantity}, Requested: {payload.quantity}, Remaining: {remaining}")
 
   if existing:
     # Update existing log by adding quantity
@@ -56,11 +50,11 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
     db.commit()
     db.refresh(existing)
     return HabitLogOut(**{
-        "id": str(existing.id),
-        "habit_id": str(existing.habit_id),
-        "date": existing.date,
-        "quantity": existing.quantity,
-        "created_at": existing.created_at
+      "id": str(existing.id),
+      "habit_id": str(existing.habit_id),
+      "date": existing.date,
+      "quantity": existing.quantity,
+      "created_at": existing.created_at
     })
   else:
     # Create new log with quantity
@@ -69,18 +63,17 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
     db.commit()
     db.refresh(log)
     return HabitLogOut(**{
-        "id": str(log.id),
-        "habit_id": str(log.habit_id),
-        "date": log.date,
-        "quantity": log.quantity,
-        "created_at": log.created_at
+      "id": str(log.id),
+      "habit_id": str(log.habit_id),
+      "date": log.date,
+      "quantity": log.quantity,
+      "created_at": log.created_at
     })
 
 
 @router.get("/", response_model=list[HabitLogOut])
 def list_logs(habit_id: str = Query(..., description="Habit ID"), date: date | None = Query(default=None, description="Filter by date"), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit = db.query(Habit).filter(Habit.id == UUID(
-      habit_id), Habit.user_id == current_user.id).first()
+  habit = db.query(Habit).filter(Habit.id == UUID(habit_id), Habit.user_id == current_user.id).first()
 
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")

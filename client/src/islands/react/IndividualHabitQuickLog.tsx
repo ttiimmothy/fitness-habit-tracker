@@ -5,7 +5,7 @@ import { useDeleteHabit } from '../../hooks/useHabits';
 import UpdateHabitSidebar from './UpdateHabitSidebar';
 import { Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
-import {useTodayHabitLogsStats} from "@/hooks/useStats";
+import {useTodayHabitLogsStats} from "../../hooks/useStats";
 
 export const IndividualHabitQuickLog = () => {
   const { selectedHabit, clearSelectedHabit } = useHabitStore();

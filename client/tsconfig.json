@@ -19,12 +19,7 @@
 
     /* Linting */
     "noFallthroughCasesInSwitch": true,
-
-    /* Path mapping */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
+    
     "types": ["astro/client", "node"]
   },
   "include": ["src"],

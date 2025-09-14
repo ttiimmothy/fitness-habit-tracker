@@ -10,67 +10,106 @@ from app.db.session import get_db
 from app.models.habit import Habit
 from app.models.habit_log import HabitLog
 from app.models.user import User
-from app.schemas.stats import TodayHabitLog, DailyLogCount, HabitStats, HabitDailyProgress
+from app.schemas.stats import TodayHabitLog, DailyLogCount, HabitStats, HabitDailyProgress, OverviewResponse, DayLogs, HabitLogEntry
 from app.services.analytics import build_week_overview
 
 router = APIRouter()
 
 
-@router.get("/overview", response_model=dict)
+@router.get("/overview/calendar", response_model=list[DayLogs])
 def overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-  habit_ids = [h.id for h in db.query(Habit.id).filter(
-      Habit.user_id == current_user.id).all()]
-  logs = db.query(HabitLog).filter(
-      HabitLog.habit_id.in_(habit_ids)).all() if habit_ids else []
-  return build_week_overview(logs)
-
-
-@router.get("/daily-counts", response_model=list[DailyLogCount])
-def get_daily_log_counts(
-    days: int = Query(default=30, ge=1, le=365,
-                      description="Number of days to look back"),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-  """Get daily habit log counts for the user's habits over the specified number of days."""
-  end_date = date.today()
-  start_date = end_date - timedelta(days=days-1)
-
+  """Get comprehensive overview of all habit logs grouped by date"""
   # Get all habits for the user
-  user_habits = db.query(Habit.id).filter(
-      Habit.user_id == current_user.id).subquery()
+  habits = db.query(Habit).filter(Habit.user_id == current_user.id).all()
+  habit_ids = [h.id for h in habits]
 
-  # Query daily log counts
-  daily_counts = db.query(
-      HabitLog.date,
-      func.count(HabitLog.id).label('count')
-  ).join(
-      user_habits, HabitLog.habit_id == user_habits.c.id
-  ).filter(
-      and_(
-          HabitLog.date >= start_date,
-          HabitLog.date <= end_date
-      )
-  ).group_by(
-      HabitLog.date
-  ).order_by(
-      HabitLog.date
-  ).all()
+  if not habit_ids:
+    return []
 
-  # Convert to dict for easier lookup
-  counts_dict = {row.date: row.count for row in daily_counts}
+  # Get all logs for user's habits, ordered by date and created_at
+  logs = db.query(HabitLog).filter(
+      HabitLog.habit_id.in_(habit_ids)
+  ).order_by(HabitLog.date.desc(), HabitLog.created_at.desc()).all()
 
-  # Fill in missing dates with 0 counts
-  result = []
-  current_date = start_date
-  while current_date <= end_date:
-    count_value = counts_dict.get(current_date, 0)
-    # Ensure count is an integer
-    count = count_value if isinstance(count_value, int) else 0
-    result.append(DailyLogCount(date=current_date, count=count))
-    current_date += timedelta(days=1)
+  # Group logs by date
+  logs_by_date = {}
+  for log in logs:
+    log_date = log.date
+    if log_date not in logs_by_date:
+      logs_by_date[log_date] = []
 
-  return result
+    # Find the habit for this log
+    habit = next((h for h in habits if h.id == log.habit_id), None)
+    if habit:
+      logs_by_date[log_date].append({
+          'habit_id': str(log.habit_id),
+          'habit_title': habit.title,
+          'quantity': log.quantity,
+          'target': habit.target,
+          'logged_at': log.created_at
+      })
+
+  # Convert to the desired format
+  day_logs = []
+  total_logs = 0
+
+  for date_key in sorted(logs_by_date.keys(), reverse=True):  # Most recent first
+    habits_for_day = logs_by_date[date_key]
+    day_logs.append(DayLogs(
+        date=date_key,
+        habits=[HabitLogEntry(**habit_data) for habit_data in habits_for_day],
+        totalLogs=len(habits_for_day)
+    ))
+    total_logs += len(habits_for_day)
+
+  return day_logs
+  # OverviewResponse(
+  #     logs=day_logs,
+  #     total_days=len(day_logs),
+  #     total_logs=total_logs
+  # )
+
+
+# @router.get("/daily-counts", response_model=list[DailyLogCount])
+# def get_daily_log_counts(
+#   days: int = Query(default=30, ge=1, le=365, description="Number of days to look back"),
+#   db: Session = Depends(get_db),
+#   current_user: User = Depends(get_current_user)
+# ):
+#   """Get daily habit log counts for the user's habits over the specified number of days."""
+#   end_date = date.today()
+#   start_date = end_date - timedelta(days=days-1)
+
+#   # Get all habits for the user
+#   user_habits = db.query(Habit.id).filter(Habit.user_id == current_user.id).subquery()
+
+#   # Query daily log counts
+#   daily_counts = db.query(HabitLog.date, func.count(HabitLog.id).label('count')
+#   ).join(
+#       user_habits, HabitLog.habit_id == user_habits.c.id
+#   ).filter(
+#     and_(
+#       HabitLog.date >= start_date,
+#       HabitLog.date <= end_date
+#     )
+#   ).group_by(HabitLog.date).order_by(
+#     HabitLog.date
+#   ).all()
+
+#   # Convert to dict for easier lookup
+#   counts_dict = {row.date: row.count for row in daily_counts}
+
+#   # Fill in missing dates with 0 counts
+#   result = []
+#   current_date = start_date
+#   while current_date <= end_date:
+#     count_value = counts_dict.get(current_date, 0)
+#     # Ensure count is an integer
+#     count = count_value if isinstance(count_value, int) else 0
+#     result.append(DailyLogCount(date=current_date, count=count))
+#     current_date += timedelta(days=1)
+
+#   return result
 
 
 @router.get("/{habit_id}/stats/streak", response_model=HabitStats)

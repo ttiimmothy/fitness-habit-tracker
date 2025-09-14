@@ -234,15 +234,13 @@ ENV=dev
 PORT=8000
 DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/fitness
 JWT_SECRET=your-super-secret-jwt-key-here
-JWT_ALG=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-CLIENT_URL=http://localhost:4321
 REDIS_URL=redis://redis:6379/0
 
 # Google OAuth (optional)
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:4321/auth/google/callback
 ```
 
 ### Frontend (.env)
