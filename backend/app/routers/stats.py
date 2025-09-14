@@ -24,7 +24,7 @@ def overview(db: Session = Depends(get_db), current_user: User = Depends(get_cur
   habit_ids = [h.id for h in habits]
 
   if not habit_ids:
-    return OverviewResponse(logs=[], total_days=0, total_logs=0)
+    return []
 
   # Get all logs for user's habits, ordered by date and created_at
   logs = db.query(HabitLog).filter(

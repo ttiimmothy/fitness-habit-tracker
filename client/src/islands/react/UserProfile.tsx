@@ -10,7 +10,6 @@ import { useMultipleHabitsStats } from '../../hooks/useStats';
 export const UserProfile = () => {
   const { user } = useAuthStore();
   // const logoutMutation = useLogout();
-  const [isLoaded, setIsLoaded] = useState(false);
   // const [isPasswordSidebarOpen, setIsPasswordSidebarOpen] = useState(false);
   // const [isUsernameSidebarOpen, setIsUsernameSidebarOpen] = useState(false);
   
@@ -26,77 +25,6 @@ export const UserProfile = () => {
   const averageCompletionRate = habitsStats && Object.keys(habitsStats).length > 0
     ? Math.round(Object.values(habitsStats).reduce((sum, stat) => sum + stat.completion_rate, 0) / Object.keys(habitsStats).length)
     : 0;
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
-
-  // // Handle ESC key to close sidebar
-  // useEffect(() => {
-  //   const handleEscKey = (event: KeyboardEvent) => {
-  //     if (event.key === 'Escape' && (isPasswordSidebarOpen || isUsernameSidebarOpen)) {
-  //       if (isPasswordSidebarOpen) closePasswordSidebar();
-  //       if (isUsernameSidebarOpen) closeUsernameSidebar();
-  //     }
-  //   };
-
-  //   if (isPasswordSidebarOpen || isUsernameSidebarOpen) {
-  //     document.addEventListener('keydown', handleEscKey);
-  //     // Prevent body scroll when sidebar is open
-  //     document.body.style.overflow = 'hidden';
-  //   }
-
-  //   return () => {
-  //     document.removeEventListener('keydown', handleEscKey);
-  //     document.body.style.overflow = 'unset';
-  //   };
-  // }, [isPasswordSidebarOpen, isUsernameSidebarOpen]);
-
-  // const handleLogout = () => {
-  //   logoutMutation.mutate(undefined, {
-  //     onSuccess: () => {
-  //       // The mutation already handles setUser(null) via setAuth(null)
-  //       window.location.href = '/login';
-  //     },
-  //     onError: () => {
-  //       // The mutation already handles setUser(null) via setAuth(null)
-  //       window.location.href = '/login';
-  //     },
-  //   });
-  // };
-
-  // const openPasswordSidebar = () => {
-  //   setIsPasswordSidebarOpen(true);
-  // };
-
-  // const closePasswordSidebar = () => {
-  //   setIsPasswordSidebarOpen(false);
-  // };
-
-  // const openUsernameSidebar = () => {
-  //   setIsUsernameSidebarOpen(true);
-  // };
-
-  // const closeUsernameSidebar = () => {
-  //   setIsUsernameSidebarOpen(false);
-  // };
-
-  // // Close sidebar when clicking outside
-  // const handleBackdropClick = (e: React.MouseEvent) => {
-  //   if (isPasswordSidebarOpen) closePasswordSidebar();
-  //   if (isUsernameSidebarOpen) closeUsernameSidebar();
-  // };
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!user) {
     return (

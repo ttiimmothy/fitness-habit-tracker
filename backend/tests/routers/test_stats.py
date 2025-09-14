@@ -417,8 +417,8 @@ class TestStatsEndpoints:
     assert habit_data["current_progress"] == 3  # 1 + 2
     assert habit_data["log_id"] is not None
 
-  def test_overview_endpoint_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
-    """Test overview endpoint with habits and logs"""
+  def test_overview_calendar_endpoint_success(self, client: TestClient, auth_headers: dict, test_habits: list[Habit]):
+    """Test overview calendar endpoint with habits and logs"""
     # Create logs for different habits (both on same date)
     client.post(f"/api/logs/habits/{test_habits[0].id}/log",
                 json={"quantity": 1},
@@ -427,22 +427,18 @@ class TestStatsEndpoints:
                 json={"quantity": 1},
                 headers=auth_headers)
 
-    response = client.get("/api/stats/overview", headers=auth_headers)
+    response = client.get("/api/stats/overview/calendar", headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
 
-    # Check response structure
-    assert "logs" in data
-    assert "total_days" in data
-    assert "total_logs" in data
-    assert isinstance(data["logs"], list)
-    assert data["total_days"] >= 1
-    assert data["total_logs"] >= 2  # Both logs should be counted
+    # Check response structure - now it's a list of DayLogs directly
+    assert isinstance(data, list)
+    assert len(data) >= 1
 
-    # Check first log entry structure
-    if data["logs"]:
-      first_day = data["logs"][0]
+    # Check first day entry structure
+    if data:
+      first_day = data[0]
       assert "date" in first_day
       assert "habits" in first_day
       assert "totalLogs" in first_day
@@ -458,19 +454,17 @@ class TestStatsEndpoints:
         assert "target" in first_habit
         assert "logged_at" in first_habit
 
-  def test_overview_endpoint_empty(self, client: TestClient, auth_headers: dict):
-    """Test overview endpoint with no habits"""
-    response = client.get("/api/stats/overview", headers=auth_headers)
+  def test_overview_calendar_endpoint_empty(self, client: TestClient, auth_headers: dict):
+    """Test overview calendar endpoint with no habits"""
+    response = client.get("/api/stats/overview/calendar", headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
 
-    assert data["logs"] == []
-    assert data["total_days"] == 0
-    assert data["total_logs"] == 0
+    assert data == []
 
-  def test_overview_endpoint_unauthenticated(self, client: TestClient):
-    """Test overview endpoint without authentication"""
-    response = client.get("/api/stats/overview")
+  def test_overview_calendar_endpoint_unauthenticated(self, client: TestClient):
+    """Test overview calendar endpoint without authentication"""
+    response = client.get("/api/stats/overview/calendar")
 
     assert response.status_code == 401
