@@ -8,7 +8,7 @@ export const HeaderRight = () => {
     <>
     {user ? (
       <div className="flex items-center gap-5">
-        <a className="text-sm opacity-60 hover:opacity-100" href="/">Dashboard</a>
+        {/* <a className="text-sm opacity-60 hover:opacity-100" href="/">Dashboard</a> */}
         {/* <a className="text-sm opacity-60 hover:opacity-100" href="/badge-intro">Badges</a> */}
         <a className="text-sm opacity-60 hover:opacity-100" href="/badge">Badges</a>
         <a className="text-sm opacity-60 hover:opacity-100" href="/user">Profile</a>
