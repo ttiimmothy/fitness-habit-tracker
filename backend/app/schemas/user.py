@@ -13,3 +13,5 @@ class UserOut(BaseModel):
   name: str | None = None
   avatar_url: str | None = None
   created_at: datetime
+  provider: str | None = None
+  has_password: bool | None = None
