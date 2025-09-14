@@ -52,7 +52,7 @@ cd fitness_habit_tracker
 
 ### 2. For development
 
-#### 1. Start the database and services
+#### 1. Start the database and server
 ```bash
 docker compose up --build
 ```
