@@ -1,6 +1,6 @@
 import requests
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
 from fastapi_limiter.depends import RateLimiter
 from app.core.config import settings
 from sqlalchemy.orm import Session
@@ -151,23 +151,27 @@ def update_profile(payload: UploadProfileRequest, db: Session = Depends(get_db),
 
 
 @router.post("/google", response_model=dict)
-def google_auth(payload: GoogleLoginRequest, response: Response, db: Session = Depends(get_db)):
+def google_auth(payload: GoogleLoginRequest, request: Request, response: Response, db: Session = Depends(get_db)):
   try:
     # Check required environment variables
-    client_id = settings.google_client_id
-    client_secret = settings.google_client_secret
-    redirect_uri = settings.google_redirect_uri
+    # client_id = settings.google_client_id
+    # client_secret = settings.google_client_secret
+
+    # Get redirect URI based on request
+    # host = request.headers.get("host")
+    origin = request.headers.get("origin")
+    redirect_uri = settings.get_google_redirect_uri_for_request(origin=origin)
     # print(
     #     f"Env vars - client_id: {bool(client_id)}, client_secret: {bool(client_secret)}, redirect_uri: {bool(redirect_uri)}")
 
     # Exchange authorization code for tokens
     token_url = "https://oauth2.googleapis.com/token"
     token_data = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "code": payload.code,
-        "grant_type": "authorization_code",
-        "redirect_uri": redirect_uri
+      "client_id": settings.google_client_id,
+      "client_secret": settings.google_client_secret,
+      "code": payload.code,
+      "grant_type": "authorization_code",
+      "redirect_uri": redirect_uri
     }
 
     token_response = requests.post(token_url, data=token_data)
@@ -176,9 +180,9 @@ def google_auth(payload: GoogleLoginRequest, response: Response, db: Session = D
 
     # Verify the ID token
     idinfo = id_token.verify_oauth2_token(
-        tokens["id_token"],
-        google_requests.Request(),
-        settings.google_client_id
+      tokens["id_token"],
+      google_requests.Request(),
+      settings.google_client_id
     )
 
     # Extract user information
@@ -186,31 +190,32 @@ def google_auth(payload: GoogleLoginRequest, response: Response, db: Session = D
     user_name = idinfo["name"]
     user_email = idinfo["email"]
     user_picture = idinfo["picture"]
-    
+
     user = get_or_create_user(db, user_id, user_name, user_email, user_picture)
     token = create_access_token(str(user.id))
 
     response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=True,  # Use HTTPS in production
-        samesite="none",
-        max_age=settings.access_token_expire_minutes * 60
+      key="access_token",
+      value=token,
+      httponly=True,
+      secure=True,  # Use HTTPS in production
+      samesite="none",
+      max_age=settings.access_token_expire_minutes * 60
     )
 
     return {
-        "user": UserOut(**{
-            "id": str(user.id),
-            "email": user.email,
-            "name": user.name,
-            "avatar_url": user.avatar_url,
-            "created_at": user.created_at,
-        })
+      "user": UserOut(**{
+        "id": str(user.id),
+        "email": user.email,
+        "name": user.name,
+        "avatar_url": user.avatar_url,
+        "created_at": user.created_at,
+      })
     }
 
-
   except requests.exceptions.RequestException as e:
-    raise HTTPException(status_code=400, detail=f"Google OAuth request failed: {str(e)}")
+    raise HTTPException(
+        status_code=400, detail=f"Google OAuth request failed: {str(e)}")
   except Exception as e:
-    raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+    raise HTTPException(
+        status_code=500, detail=f"Authentication failed: {str(e)}")
