@@ -40,7 +40,7 @@ A full-stack application for tracking fitness habits and building healthy routin
 ### Prerequisites
 - Docker and Docker Compose
 - Python 3.11+
-- Node.js 18+
+- Node.js 22+
 - uv (Python package manager)
 - Git
 
