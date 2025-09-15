@@ -183,8 +183,12 @@ export const Badges  = () => {
     );
   }
 
+  const inProgressBadges = badgesData.categories.reduce((total, category) => {
+    return total + category.badges.filter(badge => badge.status === 'in_progress').length;
+  }, 0);
+
   return (
-    <main className="pb-6 space-y-8">
+    <main className="space-y-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Achievement Badges
@@ -220,6 +224,41 @@ export const Badges  = () => {
         ))}
       </div>
 
+
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Your Badge Progress</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold">{badgesData.earned_badges}</div>
+              <div className="text-blue-100">Badges Earned</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold">{inProgressBadges}</div>
+              <div className="text-blue-100">In Progress</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold">{badgesData.total_badges}</div>
+              <div className="text-blue-100">Total Available</div>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mt-6">
+            <div className="flex justify-between text-sm text-blue-100 mb-2">
+              <span>Overall Progress</span>
+              <span>{badgesData.completion_percentage}%</span>
+            </div>
+            <div className="w-full bg-blue-300 bg-opacity-30 rounded-full h-3">
+              <div 
+                className="bg-white h-3 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${badgesData.completion_percentage}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Badge Modal */}
       {selectedBadge && (
         <BadgeModal
@@ -228,6 +267,7 @@ export const Badges  = () => {
           onClose={handleCloseModal}
         />
       )}
+
     </main>
   );
 };

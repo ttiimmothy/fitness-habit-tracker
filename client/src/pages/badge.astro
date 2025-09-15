@@ -3,7 +3,6 @@ import "../styles/global.css";
 import Layout from "../layouts/Layout.astro";
 import {AuthGuard} from "../providers/AuthGuard";
 import {BadgesIsland} from "../islands/BadgesIsland";
-import {BadgeProgressSummaryIsland} from "../islands/BadgeProgressSummaryIsland";
 ---
 
 <Layout>
@@ -12,9 +11,6 @@ import {BadgeProgressSummaryIsland} from "../islands/BadgeProgressSummaryIsland"
     
     <!-- Badges Grid -->
     <BadgesIsland client:load />
-
-    <!-- Progress Summary -->
-    <BadgeProgressSummaryIsland client:load />
 
   </main>
 </AuthGuard>
