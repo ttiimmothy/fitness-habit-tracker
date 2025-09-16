@@ -265,12 +265,32 @@ def get_habit_daily_progress(
   return result
 
 
+def get_week_start_end(today: date) -> tuple[date, date]:
+  """Get the start and end dates of the week containing the given date."""
+  # Get Monday of the current week
+  days_since_monday = today.weekday()
+  week_start = today - timedelta(days=days_since_monday)
+  week_end = week_start + timedelta(days=6)
+  return week_start, week_end
+
+
+def get_month_start_end(today: date) -> tuple[date, date]:
+  """Get the start and end dates of the month containing the given date."""
+  month_start = today.replace(day=1)
+  if today.month == 12:
+    month_end = today.replace(
+        year=today.year + 1, month=1, day=1) - timedelta(days=1)
+  else:
+    month_end = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
+  return month_start, month_end
+
+
 @router.get("/logs/today", response_model=list[TodayHabitLog])
 def get_today_habits_logs_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(verify_token)
 ):
-  """Get all user's habits with their today's log status."""
+  """Get all user's habits with their completion status for the appropriate time period."""
   today = date.today()
 
   # Get all habits for the user
@@ -282,32 +302,40 @@ def get_today_habits_logs_stats(
   # Get all habit IDs
   habit_ids = [habit.id for habit in habits]
 
-  # Get today's logs for all habits
-  today_logs = db.query(HabitLog).filter(
-      and_(
-          HabitLog.habit_id.in_(habit_ids),
-          HabitLog.date == today
-      )
-  ).all()
-
-  # Sum quantities per habit for current_progress
-  habit_log_counts = {}
-  for log in today_logs:
-    habit_log_counts[log.habit_id] = habit_log_counts.get(
-        log.habit_id, 0) + log.quantity
-
-  # Get the most recent log for each habit (for log_id and log_created_at)
-  today_logs_dict = {}
-  for log in today_logs:
-    if log.habit_id not in today_logs_dict:
-      today_logs_dict[log.habit_id] = log
-
   # Build response
   result = []
   for habit in habits:
-    current_progress = habit_log_counts.get(habit.id, 0)
+    # Determine the time period based on habit frequency
+    if habit.frequency.value == "daily":
+      start_date = today
+      end_date = today
+    elif habit.frequency.value == "weekly":
+      start_date, end_date = get_week_start_end(today)
+    elif habit.frequency.value == "monthly":
+      start_date, end_date = get_month_start_end(today)
+    else:
+      # Fallback to daily for unknown frequencies
+      start_date = today
+      end_date = today
+
+    # Get logs for the appropriate time period
+    period_logs = db.query(HabitLog).filter(
+        and_(
+            HabitLog.habit_id == habit.id,
+            HabitLog.date >= start_date,
+            HabitLog.date <= end_date
+        )
+    ).all()
+
+    # Sum quantities for current_progress
+    current_progress = sum(log.quantity for log in period_logs)
+
+    # Check if habit was completed (logged) in the appropriate period
     logged_today = current_progress > 0
-    today_log = today_logs_dict.get(habit.id)
+
+    # Get the most recent log for log_id and log_created_at
+    most_recent_log = max(
+        period_logs, key=lambda log: log.created_at) if period_logs else None
 
     result.append(TodayHabitLog(
         habit_id=str(habit.id),
@@ -317,8 +345,8 @@ def get_today_habits_logs_stats(
         target=habit.target,
         logged_today=logged_today,
         current_progress=current_progress,
-        log_id=str(today_log.id) if today_log else None,
-        log_created_at=today_log.created_at if today_log else None
+        log_id=str(most_recent_log.id) if most_recent_log else None,
+        log_created_at=most_recent_log.created_at if most_recent_log else None
     ))
 
   return result
