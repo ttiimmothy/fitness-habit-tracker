@@ -15,6 +15,7 @@ from app.models.habit_log import HabitLog
 from app.models.user import User
 from app.schemas.habit_log import HabitLogCreate, HabitLogOut
 from app.schemas.stats import TodayHabitLog
+from app.services.completion_service import update_habit_completion
 
 
 router = APIRouter()
@@ -51,6 +52,11 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
     existing.quantity += payload.quantity
     db.commit()
     db.refresh(existing)
+
+    # Update completion status for this date
+    update_habit_completion(db, habit.id, log_date)
+    db.commit()
+
     return HabitLogOut(**{
         "id": str(existing.id),
         "habit_id": str(existing.habit_id),
@@ -64,6 +70,11 @@ def create_log(habit_id: str, payload: HabitLogCreate, db: Session = Depends(get
     db.add(log)
     db.commit()
     db.refresh(log)
+
+    # Update completion status for this date
+    update_habit_completion(db, habit.id, log_date)
+    db.commit()
+
     return HabitLogOut(**{
         "id": str(log.id),
         "habit_id": str(log.habit_id),

@@ -26,9 +26,8 @@ jobs:
         run: uv sync
       - name: Lint
         working-directory: backend
-        run: |
-          uv run ruff check .
+        run: uv run ruff check .
       - name: Test
         working-directory: backend
         # run: uv run pytest -q --cov
-        run: uv run pytest -qq --cov
+        run: uv run pytest -qq

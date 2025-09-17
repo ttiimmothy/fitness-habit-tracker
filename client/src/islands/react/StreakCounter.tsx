@@ -38,21 +38,20 @@ export const StreakCounter = () => {
   }
 
   // Calculate total current streak across all habits
-  const totalCurrentStreak = habitsStats ? 
-    Object.values(habitsStats).reduce((sum, stats) => sum + stats.current_streak, 0) : 0;
+  const totalCurrentStreak = habitsStats ? Object.values(habitsStats).reduce((sum, stats) => sum + stats.current_streak, 0) : 0;
 
   return (
     <div className="p-4 border rounded bg-white dark:bg-neutral-900">
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Streak</div>
         <div className="text-3xl font-semibold text-gray-900 dark:text-gray-100">
           🔥 {totalCurrentStreak} days
         </div>
-      </div>
+      </div> */}
       
       <div className="space-y-3">
-        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-          Individual Streaks
+        <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        🔥 Streaks
         </div>
         
         {habits.map((habit) => {

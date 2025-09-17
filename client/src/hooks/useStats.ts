@@ -1,5 +1,5 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {HabitDailyProgress, TodayHabitLog} from "./useHabits";
+import {HabitDailyProgress, HabitProgress, TodayHabitLog} from "./useHabits";
 import {api} from "../lib/api";
 
 export type HabitStats = {
@@ -35,6 +35,18 @@ export const useHabitDailyProgress = (habitId: string, days: number = 7) => {
     queryKey: ['habits', habitId, 'daily-progress', days],
     queryFn: async (): Promise<HabitDailyProgress[]> => {
       const response = await api(`/stats/${habitId}/daily-progress?days=${days}`);
+      return response.data;
+    },
+    enabled: !!habitId,
+  });
+};
+
+// Fetch daily progress for a specific habit
+export const useHabitProgress = (habitId: string, days: number = 7) => {
+  return useQuery({
+    queryKey: ['habits', habitId, 'progress', days],
+    queryFn: async (): Promise<HabitProgress[]> => {
+      const response = await api(`/stats/${habitId}/progress?days=${days}`);
       return response.data;
     },
     enabled: !!habitId,

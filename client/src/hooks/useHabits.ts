@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { CreateHabitFormData } from '../schemas/habitSchemas';
+import { CreateHabitFormData, UpdateHabitFormData } from '../schemas/habitSchemas';
 
 export type Habit = {
   id: string;
@@ -19,6 +19,14 @@ export type HabitDailyProgress = {
   completed: boolean;
   target: number;
   actual: number;
+};
+
+export type HabitProgress = {
+  date: string;
+  completed: boolean;
+  target: number;
+  actual: number;
+  effective_target: number;
 };
 
 export type TodayHabitLog = {
@@ -77,7 +85,7 @@ export const useUpdateHabit = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateHabitFormData> }): Promise<Habit> => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<UpdateHabitFormData> }): Promise<Habit> => {
       const response = await api.put(`/habits/${id}`, data);
       return response.data;
     },

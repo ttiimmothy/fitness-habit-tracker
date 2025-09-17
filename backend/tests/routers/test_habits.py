@@ -178,7 +178,6 @@ class TestHabitEndpoints:
         "title": "Updated Habit",
         "description": "Updated description",
         "category": "learning",
-        "frequency": "weekly",
         "target": 2
     },
         headers=auth_headers)
@@ -188,7 +187,7 @@ class TestHabitEndpoints:
     assert data["title"] == "Updated Habit"
     assert data["description"] == "Updated description"
     assert data["category"] == "learning"
-    assert data["frequency"] == "weekly"
+    assert data["frequency"] == "daily"  # Frequency should remain unchanged
     assert data["target"] == 2
 
   def test_update_habit_partial(self, client: TestClient, auth_headers: dict, test_habit: Habit):
