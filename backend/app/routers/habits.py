@@ -7,6 +7,7 @@ from app.db.session import get_db
 from app.models.habit import Habit, Frequency, Category
 from app.models.user import User
 from app.schemas.habit import HabitOut, HabitCreate, HabitUpdate
+from app.services.completion_service import recalculate_habit_completions, update_habit_completions_for_new_target
 
 
 router = APIRouter()
@@ -82,9 +83,14 @@ def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_
       habit_id), Habit.user_id == current_user.id).first()
   if not habit:
     raise HTTPException(status_code=404, detail="Habit not found")
+  # Track if target changed for completion recalculation
+  target_changed = False
+
   if payload.title is not None:
     habit.title = payload.title
   if payload.target is not None:
+    if habit.target != payload.target:
+      target_changed = True
     habit.target = payload.target
   if payload.category is not None:
     try:
@@ -93,8 +99,22 @@ def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_
       raise HTTPException(status_code=422, detail="Invalid category")
   if payload.description is not None:
     habit.description = payload.description
+
   db.commit()
   db.refresh(habit)
+
+  # Update completions if target changed
+  if target_changed:
+    try:
+      # Use the new function that preserves historical accuracy
+      update_habit_completions_for_new_target(db, habit.id, habit.target)
+      db.commit()
+    except Exception as e:
+      # Log error but don't fail the update
+      print(
+          f"Warning: Failed to update completions for habit {habit.id}: {e}")
+      db.rollback()
+      db.commit()  # Still save the habit update
   return HabitOut(**{
       "id": str(habit.id),
       "user_id": str(habit.user_id),

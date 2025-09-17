@@ -21,6 +21,14 @@ export type HabitDailyProgress = {
   actual: number;
 };
 
+export type HabitProgress = {
+  date: string;
+  completed: boolean;
+  target: number;
+  actual: number;
+  effective_target: number;
+};
+
 export type TodayHabitLog = {
   habit_id: string;
   title: string;

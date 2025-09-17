@@ -1,8 +1,9 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useHabitStore } from '../../store/habitStore';
-import { HabitDailyProgress } from '../../hooks/useHabits';
-import { useHabitDailyProgress, useHabitStats } from "../../hooks/useStats";
+import { HabitProgress } from '../../hooks/useHabits';
+import { useHabitProgress, useHabitStats } from "../../hooks/useStats";
 import { dateUtils } from '../../lib/dayjs';
+import dayjs from 'dayjs';
 
 // Chart data type for recharts
 type ChartDataPoint = {
@@ -10,23 +11,85 @@ type ChartDataPoint = {
   progress: number;
 };
 
+// Helper functions for different habit frequencies
+const getFrequencyInfo = (frequency: string) => {
+  switch (frequency) {
+    case 'daily':
+      return {
+        periodName: 'days',
+        periodNameSingular: 'day',
+        xAxisFormatter: (value: string) => dateUtils.formatDateLocale(value, { weekday: 'short' }),
+        tooltipFormatter: (value: string) => dateUtils.formatDateLocale(value, { 
+          weekday: 'long', 
+          month: 'short', 
+          day: 'numeric' 
+        }),
+        titleSuffix: 'Last 7 days'
+      };
+    case 'weekly':
+      return {
+        periodName: 'weeks',
+        periodNameSingular: 'week',
+        xAxisFormatter: (value: string) => {
+          const date = dayjs(value);
+          return `${date.week()}`;
+        },
+        tooltipFormatter: (value: string) => {
+          const date = dayjs(value);
+          const weekEnd = date.add(6, 'days');
+          return `Week of ${date.format('MMM D')} - ${weekEnd.format('MMM D, YYYY')}`;
+        },
+        titleSuffix: 'Last 7 weeks'
+      };
+    case 'monthly':
+      return {
+        periodName: 'months',
+        periodNameSingular: 'month',
+        xAxisFormatter: (value: string) => {
+          const date = dayjs(value);
+          return date.format('MMM');
+        },
+        tooltipFormatter: (value: string) => {
+          const date = dayjs(value);
+          return date.format('MMMM YYYY');
+        },
+        titleSuffix: 'Last 7 months'
+      };
+    default:
+      return {
+        periodName: 'days',
+        periodNameSingular: 'day',
+        xAxisFormatter: (value: string) => dateUtils.formatDateLocale(value, { weekday: 'short' }),
+        tooltipFormatter: (value: string) => dateUtils.formatDateLocale(value, { 
+          weekday: 'long', 
+          month: 'short', 
+          day: 'numeric' 
+        }),
+        titleSuffix: 'Last 7 days'
+      };
+  }
+};
+
 // Custom Tooltip component for better dark mode styling
-const createCustomTooltip = (selectedHabit: any) => {
+const createCustomTooltip = (selectedHabit: any, dailyProgress: HabitProgress[]) => {
+  const frequencyInfo = getFrequencyInfo(selectedHabit?.frequency || 'daily');
+  
   return ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const loggedQuantity = payload[0].value;
       const target = selectedHabit?.target || 1;
-      const isCompleted = loggedQuantity >= target;
-      const isSemiCompleted = loggedQuantity > 0 && loggedQuantity < target;
+      
+      // Find the corresponding progress data to get effective_target
+      const progressData = dailyProgress?.find(progress => progress.date === label);
+      const effectiveTarget = progressData?.effective_target || target;
+      
+      const isCompleted = loggedQuantity >= effectiveTarget;
+      const isSemiCompleted = loggedQuantity > 0 && loggedQuantity < effectiveTarget;
       
       return (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-            {dateUtils.formatDateLocale(label, { 
-              weekday: 'long', 
-              month: 'short', 
-              day: 'numeric' 
-            })}
+            {frequencyInfo.tooltipFormatter(label)}
           </p>
           <p className={`text-sm font-semibold ${
             isCompleted 
@@ -43,8 +106,13 @@ const createCustomTooltip = (selectedHabit: any) => {
             }
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Logged: {loggedQuantity} / {target}
+            Logged: {loggedQuantity} / {effectiveTarget}
           </p>
+          {(
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              (Target at time: {target})
+            </p>
+          )}
         </div>
       );
     }
@@ -55,12 +123,15 @@ const createCustomTooltip = (selectedHabit: any) => {
 export const IndividualHabitChart = () => {
   const { selectedHabit } = useHabitStore();
   
+  // Get frequency-specific information
+  const frequencyInfo = getFrequencyInfo(selectedHabit?.frequency || 'daily');
+  
   // Fetch daily progress data for the selected habit
   const { 
     data: dailyProgress, 
     isLoading: dailyProgressLoading, 
     error: dailyProgressError 
-  } = useHabitDailyProgress(selectedHabit?.id || '', 7);
+  } = useHabitProgress(selectedHabit?.id || '', 7);
 
   // Fetch habit stats (streaks, etc.)
   const {
@@ -69,11 +140,11 @@ export const IndividualHabitChart = () => {
     error: statsError
   } = useHabitStats(selectedHabit?.id || '');
 
-  // Transform API data to chart format
-  const chartData: ChartDataPoint[] = dailyProgress?.map((day: HabitDailyProgress) => ({
+  // Transform API data to chart format and sort by date (ascending)
+  const chartData: ChartDataPoint[] = dailyProgress?.map((day: HabitProgress) => ({
     date: day.date,
     progress: day.actual
-  })) || [];
+  })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) || [];
 
   if (!selectedHabit) {
     return (
@@ -114,12 +185,12 @@ export const IndividualHabitChart = () => {
     <div className="p-4 border rounded bg-white dark:bg-neutral-900 max-w-3xl mx-auto">
       <div className="mb-4">
         <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-          {selectedHabit.title} - Last 7 days
+          {selectedHabit.title} - {frequencyInfo.titleSuffix}
         </h3>
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span>Target: {selectedHabit.target}</span>
           {/* <span>•</span> */}
-          <span>Completed: {dailyProgress?.filter(day => day.completed).length || 0}/7 days</span>
+          <span>Completed: {dailyProgress?.filter(day => day.completed).length || 0}/7 {frequencyInfo.periodName}</span>
           {/* <span>•</span> */}
           <span>Success Rate: {dailyProgress ? Math.round((dailyProgress.filter(day => day.completed).length / dailyProgress.length) * 100) : 0}%</span>
           {habitStats && (
@@ -144,9 +215,7 @@ export const IndividualHabitChart = () => {
             dataKey="date" 
             tick={{ fill: 'currentColor', fontSize: 12 }}
             axisLine={{ stroke: 'currentColor' }}
-            tickFormatter={(value) => {
-              return dateUtils.formatDateLocale(value, { weekday: 'short' });
-            }}
+            tickFormatter={frequencyInfo.xAxisFormatter}
           />
           <YAxis 
             allowDecimals={false} 
@@ -154,7 +223,7 @@ export const IndividualHabitChart = () => {
             axisLine={{ stroke: 'currentColor' }}
             domain={[0, selectedHabit.target]}
           />
-          <Tooltip content={createCustomTooltip(selectedHabit)} />
+          <Tooltip content={createCustomTooltip(selectedHabit, dailyProgress || [])} />
           <Line 
             type="monotone" 
             dataKey="progress" 

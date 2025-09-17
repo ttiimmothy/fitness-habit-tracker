@@ -5,5 +5,6 @@ from .user import User        # noqa: F401
 from .badge import Badge      # noqa: F401
 from .habit_log import HabitLog
 from .habit import Habit
+from .habit_completion import HabitCompletion
 
 # from user import User   # ❌ Looks in Python's module search path, not in models/

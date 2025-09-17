@@ -24,6 +24,8 @@ class HabitDailyProgress(BaseModel):
   completed: bool
   target: int
   actual: int
+  # Target that was in effect during this period
+  effective_target: int | None = None
 
 
 class TodayHabitLog(BaseModel):

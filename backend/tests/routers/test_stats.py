@@ -88,17 +88,15 @@ class TestStatsEndpoints:
 
   def test_habit_streak_stats_success(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak statistics"""
-    # Create logs for consecutive days
+    # Create logs for consecutive days using API endpoint (which creates completion records)
     today = date.today()
     for i in range(5):
       log_date = today - timedelta(days=i)
-      log = HabitLog(
-          habit_id=test_habit.id,
-          date=log_date,
-          quantity=1
-      )
-      db_session.add(log)
-    db_session.commit()
+      # Use API endpoint to create logs (this will also create completion records)
+      response = client.post(f"/api/logs/habits/{test_habit.id}/log",
+                             json={"quantity": 1, "date": log_date.isoformat()},
+                             headers=auth_headers)
+      assert response.status_code == 200
 
     response = client.get(
         f"/api/stats/{test_habit.id}/stats/streak", headers=auth_headers)
@@ -111,19 +109,16 @@ class TestStatsEndpoints:
 
   def test_habit_streak_stats_broken_streak(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak with broken streak"""
-    # Create logs with a gap
+    # Create logs with a gap using API endpoint
     today = date.today()
     dates = [today, today - timedelta(days=1), today -
              timedelta(days=3), today - timedelta(days=4)]
 
     for log_date in dates:
-      log = HabitLog(
-          habit_id=test_habit.id,
-          date=log_date,
-          quantity=1
-      )
-      db_session.add(log)
-    db_session.commit()
+      response = client.post(f"/api/logs/habits/{test_habit.id}/log",
+                             json={"quantity": 1, "date": log_date.isoformat()},
+                             headers=auth_headers)
+      assert response.status_code == 200
 
     response = client.get(
         f"/api/stats/{test_habit.id}/stats/streak", headers=auth_headers)
@@ -135,17 +130,14 @@ class TestStatsEndpoints:
 
   def test_habit_streak_stats_insufficient_quantity(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit streak with insufficient quantity (less than target)"""
-    # Create logs with quantity less than target
+    # Create logs with quantity less than target using API endpoint
     today = date.today()
     for i in range(3):
       log_date = today - timedelta(days=i)
-      log = HabitLog(
-          habit_id=test_habit.id,
-          date=log_date,
-          quantity=0  # Less than target of 1
-      )
-      db_session.add(log)
-    db_session.commit()
+      response = client.post(f"/api/logs/habits/{test_habit.id}/log",
+                             json={"quantity": 0, "date": log_date.isoformat()},
+                             headers=auth_headers)
+      assert response.status_code == 200
 
     response = client.get(
         f"/api/stats/{test_habit.id}/stats/streak", headers=auth_headers)
@@ -186,17 +178,16 @@ class TestStatsEndpoints:
 
   def test_habit_daily_progress_success(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit daily progress endpoint"""
-    # Create logs for different days
+    # Create logs for different days using API endpoint
     today = date.today()
     for i in range(7):
       log_date = today - timedelta(days=i)
-      log = HabitLog(
-          habit_id=test_habit.id,
-          date=log_date,
-          quantity=1 if i % 2 == 0 else 0  # Every other day
-      )
-      db_session.add(log)
-    db_session.commit()
+      quantity = 1 if i % 2 == 0 else 0  # Every other day
+      response = client.post(f"/api/logs/habits/{test_habit.id}/log",
+                             json={"quantity": quantity,
+                                   "date": log_date.isoformat()},
+                             headers=auth_headers)
+      assert response.status_code == 200
 
     response = client.get(
         f"/api/stats/{test_habit.id}/daily-progress?days=7", headers=auth_headers)
@@ -231,28 +222,36 @@ class TestStatsEndpoints:
 
   def test_habit_daily_progress_with_quantities(self, client: TestClient, auth_headers: dict, test_habit: Habit, db_session: Session):
     """Test habit daily progress shows correct quantities"""
-    # Create logs with different quantities
+    # First create a habit with higher target for this test
+    habit_response = client.post("/api/habits",
+                                 json={
+                                     "title": "High Target Habit",
+                                     "description": "A habit with high target",
+                                     "category": "fitness",
+                                     "frequency": "daily",
+                                     "target": 5
+                                 },
+                                 headers=auth_headers)
+    assert habit_response.status_code == 201
+    habit_data = habit_response.json()
+
+    # Create logs with different quantities using API endpoint
     today = date.today()
     # Day 1: quantity 2
-    log1 = HabitLog(
-        habit_id=test_habit.id,
-        date=today,
-        quantity=2
-    )
-    db_session.add(log1)
+    response1 = client.post(f"/api/logs/habits/{habit_data['id']}/log",
+                            json={"quantity": 2, "date": today.isoformat()},
+                            headers=auth_headers)
+    assert response1.status_code == 200
 
     # Day 2: quantity 1
-    log2 = HabitLog(
-        habit_id=test_habit.id,
-        date=today - timedelta(days=1),
-        quantity=1
-    )
-    db_session.add(log2)
-
-    db_session.commit()
+    response2 = client.post(f"/api/logs/habits/{habit_data['id']}/log",
+                            json={"quantity": 1, "date": (
+                                today - timedelta(days=1)).isoformat()},
+                            headers=auth_headers)
+    assert response2.status_code == 200
 
     response = client.get(
-        f"/api/stats/{test_habit.id}/daily-progress?days=2", headers=auth_headers)
+        f"/api/stats/{habit_data['id']}/daily-progress?days=2", headers=auth_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -261,15 +260,15 @@ class TestStatsEndpoints:
     # Check today's data
     today_data = next(
         item for item in data if item["date"] == today.isoformat())
-    assert today_data["completed"] is True
-    assert today_data["target"] == 1
+    assert today_data["completed"] is False  # 2 < 5 target
+    assert today_data["target"] == 5
     assert today_data["actual"] == 2
 
     # Check yesterday's data
     yesterday_data = next(item for item in data if item["date"] == (
         today - timedelta(days=1)).isoformat())
-    assert yesterday_data["completed"] is True
-    assert yesterday_data["target"] == 1
+    assert yesterday_data["completed"] is False  # 1 < 5 target
+    assert yesterday_data["target"] == 5
     assert yesterday_data["actual"] == 1
 
   def test_habit_daily_progress_nonexistent_habit(self, client: TestClient, auth_headers: dict):
@@ -413,7 +412,8 @@ class TestStatsEndpoints:
         break
 
     assert habit_data is not None, "Could not find habit with current_progress of 3"
-    assert habit_data["logged_today"] is True
+    # 3 < 5 target, so not completed
+    assert habit_data["logged_today"] is False
     assert habit_data["current_progress"] == 3  # 1 + 2
     assert habit_data["log_id"] is not None
 
