@@ -28,7 +28,6 @@ class HabitCreate(BaseModel):
 
 class HabitUpdate(BaseModel):
   title: str | None = None
-  frequency: str | None = None
   target: int | None = Field(None, gt=0, description="Target must be positive")
   category: str | None = None
   description: str | None = None

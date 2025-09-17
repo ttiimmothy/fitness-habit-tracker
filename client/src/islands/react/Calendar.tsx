@@ -184,7 +184,11 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
 
   // Handle mouse events for tooltip
   const handleMouseEnter = (date: Date, event: React.MouseEvent) => {
-    if (hasLogs(date)) {
+    const dayLogs = getLogsForDate(date);
+    
+    // Only show tooltip if we actually have logs data
+    if (dayLogs && dayLogs.habits && dayLogs.habits.length > 0) {
+      // Store both the date string and the actual date object
       setHoveredDate(date.toISOString().split('T')[0]);
       setTooltipPosition({ x: event.clientX, y: event.clientY });
     }
@@ -456,8 +460,14 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
           }}
         >
           {(() => {
-            const dayLogs = getLogsForDate(new Date(hoveredDate));
-            if (!dayLogs) return null;
+            // Use the same date formatting logic as getLogsForDate
+            const dateStr = hoveredDate; // hoveredDate is already in YYYY-MM-DD format
+            const dayLogs = habitLogs?.find(log => log.date === dateStr) || null;
+            
+            // If no logs or no habits, don't show tooltip
+            if (!dayLogs || !dayLogs.habits || dayLogs.habits.length === 0) {
+              return null;
+            }
 
             return (
               <div>
@@ -481,7 +491,7 @@ export const Calendar = ({ className = '' }: CalendarIslandProps) => {
                 </div>
                 <div className="mt-2 pt-2 border-t border-gray-600">
                   <div className="text-xs text-gray-300">
-                    Total: {dayLogs.totalLogs} logs
+                    Total: {dayLogs.totalLogs || dayLogs.habits.length} logs
                   </div>
                 </div>
               </div>

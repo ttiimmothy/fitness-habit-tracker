@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
-import { createHabitSchema, CreateHabitFormData } from '../../schemas/habitSchemas';
+import { updateHabitSchema, UpdateHabitFormData } from '../../schemas/habitSchemas';
 import { useUpdateHabit } from '../../hooks/useHabits';
 
 interface UpdateHabitFormProps {
@@ -18,11 +18,6 @@ interface UpdateHabitFormProps {
   onSuccess?: () => void;
 }
 
-const frequencyOptions = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-];
 
 const colorOptions = [
   { value: '#3B82F6', label: 'Blue' },
@@ -54,13 +49,12 @@ export default function UpdateHabitForm({ habit, onSuccess }: UpdateHabitFormPro
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CreateHabitFormData>({
-    resolver: zodResolver(createHabitSchema),
+  } = useForm<UpdateHabitFormData>({
+    resolver: zodResolver(updateHabitSchema),
     defaultValues: {
       title: habit.title,
       description: habit.description || '',
       category: habit.category,
-      frequency: habit.frequency as 'daily' | 'weekly' | 'monthly',
       target: habit.target,
       // color: habit.color || '#3B82F6',
     },
@@ -72,13 +66,12 @@ export default function UpdateHabitForm({ habit, onSuccess }: UpdateHabitFormPro
       title: habit.title,
       description: habit.description || '',
       category: habit.category,
-      frequency: habit.frequency as 'daily' | 'weekly' | 'monthly',
       target: habit.target,
       // color: habit.color || '#3B82F6',
     });
   }, [habit, reset]);
 
-  const onSubmit = async (data: CreateHabitFormData) => {
+  const onSubmit = async (data: UpdateHabitFormData) => {
     try {
       await updateHabitMutation.mutateAsync({
         id: habit.id,
@@ -152,32 +145,11 @@ export default function UpdateHabitForm({ habit, onSuccess }: UpdateHabitFormPro
             )}
           </div>
 
-          {/* Frequency */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Frequency *
-            </label>
-            <select
-              {...register('frequency')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 bg-white dark:text-white"
-            >
-              {frequencyOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {errors.frequency && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.frequency.message}
-              </p>
-            )}
-          </div>
 
           {/* Target */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Target (times per {habit.frequency}) *
+              Target *
             </label>
             <input
               {...register('target', { valueAsNumber: true })}

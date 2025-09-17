@@ -133,40 +133,167 @@ def get_habit_stats_streak(
       HabitLog.habit_id == habit.id
   ).order_by(HabitLog.date.desc()).all()
 
-  # Filter logs where quantity >= target (successful completion)
-  successful_logs = [log for log in logs if log.quantity >= habit.target]
-  successful_dates = [log.date for log in successful_logs]
+  # Group logs by date and sum quantities to check if target is met
+  daily_totals = {}
+  for log in logs:
+    if log.date not in daily_totals:
+      daily_totals[log.date] = 0
+    daily_totals[log.date] += log.quantity
+
+  # Filter successful completions based on habit frequency
+  if habit.frequency.value == "daily":
+    # For daily habits: check if each day meets the target
+    successful_dates = [date for date,
+                        total in daily_totals.items() if total >= habit.target]
+  elif habit.frequency.value == "weekly":
+    # For weekly habits: group by week and check if weekly total meets target
+    weekly_totals = {}
+    for log_date, total in daily_totals.items():
+      # Get Monday of the week containing this date
+      days_since_monday = log_date.weekday()
+      week_start = log_date - timedelta(days=days_since_monday)
+      if week_start not in weekly_totals:
+        weekly_totals[week_start] = 0
+      weekly_totals[week_start] += total
+
+    # Find weeks that meet the target
+    successful_weeks = [week_start for week_start,
+                        total in weekly_totals.items() if total >= habit.target]
+
+    # Convert back to successful dates (all dates in successful weeks)
+    successful_dates = []
+    for week_start in successful_weeks:
+      for log_date, total in daily_totals.items():
+        days_since_monday = log_date.weekday()
+        week_start_for_date = log_date - timedelta(days=days_since_monday)
+        if week_start_for_date == week_start:
+          successful_dates.append(log_date)
+  else:  # monthly
+    # For monthly habits: group by month and check if monthly total meets target
+    monthly_totals = {}
+    for log_date, total in daily_totals.items():
+      month_start = log_date.replace(day=1)
+      if month_start not in monthly_totals:
+        monthly_totals[month_start] = 0
+      monthly_totals[month_start] += total
+
+    # Find months that meet the target
+    successful_months = [month_start for month_start,
+                         total in monthly_totals.items() if total >= habit.target]
+
+    # Convert back to successful dates (all dates in successful months)
+    successful_dates = []
+    for month_start in successful_months:
+      for log_date, total in daily_totals.items():
+        month_start_for_date = log_date.replace(day=1)
+        if month_start_for_date == month_start:
+          successful_dates.append(log_date)
 
   # Calculate streaks based on successful completions
   current_streak = 0
   longest_streak = 0
-  temp_streak = 0
-  last_log_date = successful_dates[0] if successful_dates else None
 
-  if successful_dates:
-    # Calculate current streak (consecutive days from today backwards)
-    today = date.today()
-    current_date = today
+  if habit.frequency.value == "daily":
+    # Daily habits: consecutive days
+    if successful_dates:
+      today = date.today()
+      current_date = today
 
-    for log_date in successful_dates:
-      if log_date == current_date:
-        current_streak += 1
-        current_date -= timedelta(days=1)
-      elif log_date < current_date:
-        break
+      # Calculate current streak (consecutive days from today backwards)
+      for log_date in successful_dates:
+        if log_date == current_date:
+          current_streak += 1
+          current_date -= timedelta(days=1)
+        elif log_date < current_date:
+          break
 
-    # Calculate longest streak
-    if len(successful_dates) > 1:
-      temp_streak = 1
-      for i in range(1, len(successful_dates)):
-        if (successful_dates[i-1] - successful_dates[i]).days == 1:
-          temp_streak += 1
-        else:
-          longest_streak = max(longest_streak, temp_streak)
-          temp_streak = 1
-      longest_streak = max(longest_streak, temp_streak)
-    else:
-      longest_streak = 1
+      # Calculate longest streak
+      if len(successful_dates) > 1:
+        temp_streak = 1
+        for i in range(1, len(successful_dates)):
+          if (successful_dates[i-1] - successful_dates[i]).days == 1:
+            temp_streak += 1
+          else:
+            longest_streak = max(longest_streak, temp_streak)
+            temp_streak = 1
+        longest_streak = max(longest_streak, temp_streak)
+      else:
+        longest_streak = 1
+
+  elif habit.frequency.value == "weekly":
+    # Weekly habits: consecutive weeks (using calendar weeks)
+    if successful_dates:
+      # Group successful dates by calendar week (Monday-Sunday)
+      successful_weeks = set()
+      for log_date in successful_dates:
+        # Get Monday of the week containing this date
+        days_since_monday = log_date.weekday()
+        week_start = log_date - timedelta(days=days_since_monday)
+        successful_weeks.add(week_start)
+
+      successful_weeks = sorted(successful_weeks, reverse=True)
+
+      # Calculate current streak (consecutive weeks from current week backwards)
+      today = date.today()
+      days_since_monday = today.weekday()
+      current_week_start = today - timedelta(days=days_since_monday)
+      current_week = current_week_start
+
+      for week_start in successful_weeks:
+        if week_start == current_week:
+          current_streak += 1
+          current_week -= timedelta(days=7)  # Go back one week
+        elif week_start < current_week:
+          break
+
+      # Calculate longest streak
+      if len(successful_weeks) > 1:
+        temp_streak = 1
+        for i in range(1, len(successful_weeks)):
+          if (successful_weeks[i-1] - successful_weeks[i]).days == 7:
+            temp_streak += 1
+          else:
+            longest_streak = max(longest_streak, temp_streak)
+            temp_streak = 1
+        longest_streak = max(longest_streak, temp_streak)
+      else:
+        longest_streak = 1
+
+  else:  # monthly
+    # Monthly habits: consecutive months
+    if successful_dates:
+      # Group successful dates by month
+      successful_months = set()
+      for log_date in successful_dates:
+        days_since_creation = (log_date - habit.created_at.date()).days
+        month_number = days_since_creation // 30
+        successful_months.add(month_number)
+
+      successful_months = sorted(successful_months, reverse=True)
+
+      # Calculate current streak (consecutive months from current month backwards)
+      current_month = (date.today() - habit.created_at.date()).days // 30
+      current_month_num = current_month
+
+      for month_num in successful_months:
+        if month_num == current_month_num:
+          current_streak += 1
+          current_month_num -= 1
+        elif month_num < current_month_num:
+          break
+
+      # Calculate longest streak
+      if len(successful_months) > 1:
+        temp_streak = 1
+        for i in range(1, len(successful_months)):
+          if successful_months[i-1] - successful_months[i] == 1:
+            temp_streak += 1
+          else:
+            longest_streak = max(longest_streak, temp_streak)
+            temp_streak = 1
+        longest_streak = max(longest_streak, temp_streak)
+      else:
+        longest_streak = 1
 
   # Calculate completion rate based on frequency
   if habit.frequency.value == "daily":
@@ -176,17 +303,31 @@ def get_habit_stats_streak(
     completion_rate = (len(unique_successful_dates) / days_since_creation) * \
         100 if days_since_creation > 0 else 0
   elif habit.frequency.value == "weekly":
-    # For weekly habits: count weeks with at least one successful completion
-    weeks_since_creation = (
-        (date.today() - habit.created_at.date()).days // 7) + 1
+    # For weekly habits: count calendar weeks with at least one successful completion
+    # Calculate total weeks since habit creation
+    habit_creation = habit.created_at.date()
+    today = date.today()
 
-    # Group successful dates by week and count weeks with at least one success
+    # Get the Monday of the week when habit was created
+    days_since_monday_creation = habit_creation.weekday()
+    creation_week_start = habit_creation - \
+        timedelta(days=days_since_monday_creation)
+
+    # Get the Monday of the current week
+    days_since_monday_today = today.weekday()
+    current_week_start = today - timedelta(days=days_since_monday_today)
+
+    # Calculate total weeks (inclusive)
+    weeks_since_creation = (
+        (current_week_start - creation_week_start).days // 7) + 1
+
+    # Group successful dates by calendar week and count weeks with at least one success
     successful_weeks = set()
     for log_date in successful_dates:
-      # Calculate which week this date falls into (weeks since habit creation)
-      days_since_creation = (log_date - habit.created_at.date()).days
-      week_number = days_since_creation // 7
-      successful_weeks.add(week_number)
+      # Get Monday of the week containing this date
+      days_since_monday = log_date.weekday()
+      week_start = log_date - timedelta(days=days_since_monday)
+      successful_weeks.add(week_start)
 
     completion_rate = (len(successful_weeks) / weeks_since_creation) * \
         100 if weeks_since_creation > 0 else 0
@@ -214,6 +355,8 @@ def get_habit_stats_streak(
       completion_rate=round(completion_rate, 2)
       # last_log_date=last_log_date
   )
+
+# use for individual habit chart
 
 
 @router.get("/{habit_id}/daily-progress", response_model=list[HabitDailyProgress])
@@ -285,6 +428,7 @@ def get_month_start_end(today: date) -> tuple[date, date]:
   return month_start, month_end
 
 
+# Send today's habit logs stats
 @router.get("/logs/today", response_model=list[TodayHabitLog])
 def get_today_habits_logs_stats(
     db: Session = Depends(get_db),

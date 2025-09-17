@@ -14,11 +14,12 @@ jobs:
       - name: Install deps
         working-directory: client
         run: npm ci
-      - name: Lint & Typecheck
+      - name: Lint
         working-directory: client
-        run: |
-          npm run lint || true
-          npm run typecheck
+        run: npm run lint
+      - name: Typecheck
+        working-directory: client
+        run: npm run typecheck
       - name: Build
         working-directory: client
         run: npm run build

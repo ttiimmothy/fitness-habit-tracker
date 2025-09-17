@@ -84,11 +84,6 @@ def update_habit(habit_id: str, payload: HabitUpdate, db: Session = Depends(get_
     raise HTTPException(status_code=404, detail="Habit not found")
   if payload.title is not None:
     habit.title = payload.title
-  if payload.frequency is not None:
-    try:
-      habit.frequency = Frequency(payload.frequency)
-    except ValueError:
-      raise HTTPException(status_code=422, detail="Invalid frequency")
   if payload.target is not None:
     habit.target = payload.target
   if payload.category is not None:
