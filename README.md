@@ -46,7 +46,7 @@ A full-stack application for tracking fitness habits and building healthy routin
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/ttiimmothy/fitness-habit-tracker.git
+git clone https://github.com/ttiimmothy/fitness-habit-tracker
 cd fitness-habit-tracker
 ```
 
