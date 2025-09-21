@@ -323,7 +323,7 @@ docker compose down
 ```bash
 # Backend
 cd backend
-docker build -t fitness-tracker-backend .
+docker build -t fitness-habit-tracker-backend .
 ```
 
 ## Environment Variables
