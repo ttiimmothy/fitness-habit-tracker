@@ -13,26 +13,26 @@ from app.routers import stats
 from app.routers import badges
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-  # Startup logic
-  if settings.rate_limit_enabled:  # toggle via env
-    try:
-      await init_rate_limiter()
-    except Exception as e:
-      # Log but don't crash in dev
-      print(f"⚠️ Rate limiter init failed: {e}")
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#   # Startup logic
+#   if settings.rate_limit_enabled:  # toggle via env
+#     try:
+#       await init_rate_limiter()
+#     except Exception as e:
+#       # Log but don't crash in dev
+#       print(f"⚠️ Rate limiter init failed: {e}")
 
-  yield
+#   yield
 
-  # Shutdown logic
-  if FastAPILimiter.redis:
-    await FastAPILimiter.redis.aclose()
+#   # Shutdown logic
+#   if FastAPILimiter.redis:
+#     await FastAPILimiter.redis.aclose()
 
 
 def create_app() -> FastAPI:
-  app = FastAPI(title="Fitness & Habit Tracker",
-                version="0.1.0", lifespan=lifespan)
+  # app = FastAPI(title="Fitness & Habit Tracker", version="0.1.0", lifespan=lifespan)
+  app = FastAPI(title="Fitness & Habit Tracker", version="0.1.0")
 
   app.add_middleware(
       CORSMiddleware,
