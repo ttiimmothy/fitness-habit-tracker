@@ -31,8 +31,8 @@ from app.routers import badges
 
 
 def create_app() -> FastAPI:
-  app = FastAPI(title="Fitness & Habit Tracker",
-                version="0.1.0", lifespan=lifespan)
+  # app = FastAPI(title="Fitness & Habit Tracker", version="0.1.0", lifespan=lifespan)
+  app = FastAPI(title="Fitness & Habit Tracker", version="0.1.0")
 
   app.add_middleware(
       CORSMiddleware,
