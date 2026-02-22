@@ -11,7 +11,6 @@ from app.routers import logs
 from app.routers import stats
 from app.routers import badges
 
-
 def create_app() -> FastAPI:
   app = FastAPI(title="Fitness & Habit Tracker", version="0.1.0")
   app.add_middleware(
