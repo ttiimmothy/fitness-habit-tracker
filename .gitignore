@@ -27,3 +27,5 @@ backend/**/README.md
 client/Dockerfile
 .dockerignore
 .vscode
+.worktrees/
+.antigravitycli
